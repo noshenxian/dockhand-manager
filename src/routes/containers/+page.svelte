@@ -72,6 +72,7 @@
 	import { DataGrid } from '$lib/components/data-grid';
 	import type { ColumnConfig } from '$lib/types';
 	import type { DataGridRowState } from '$lib/components/data-grid/types';
+	import { _, locale } from '$lib/i18n';
 
 	// Track previous stats for change detection
 	let previousStats = $state<Map<string, ContainerStats>>(new Map());
@@ -109,14 +110,18 @@
 	let statusFilter = $state<string[]>([]);
 
 	// Status types with icons for filter and table
-	const statusTypes = [
-		{ value: 'running', label: 'Running', icon: Play, color: 'text-emerald-500' },
-		{ value: 'paused', label: 'Paused', icon: Pause, color: 'text-amber-500' },
-		{ value: 'restarting', label: 'Restarting', icon: RotateCw, color: 'text-red-500' },
-		{ value: 'exited', label: 'Exited', icon: Square, color: 'text-rose-500' },
-		{ value: 'created', label: 'Created', icon: Plus, color: 'text-sky-500' },
-		{ value: 'dead', label: 'Dead', icon: Skull, color: 'text-gray-500' }
-	];
+	const statusTypes = $derived.by(() => {
+		// Force dependency on locale
+		const currentLocale = $locale;
+		return [
+			{ value: 'running', label: $_('containers.running'), icon: Play, color: 'text-emerald-500' },
+			{ value: 'paused', label: $_('containers.paused'), icon: Pause, color: 'text-amber-500' },
+			{ value: 'restarting', label: $_('containers.restarting'), icon: RotateCw, color: 'text-red-500' },
+			{ value: 'exited', label: $_('containers.exited'), icon: Square, color: 'text-rose-500' },
+			{ value: 'created', label: $_('containers.created'), icon: Plus, color: 'text-sky-500' },
+			{ value: 'dead', label: $_('containers.dead'), icon: Skull, color: 'text-gray-500' }
+		];
+	});
 
 	function getStatusIcon(state: string) {
 		const status = statusTypes.find(s => s.value === state.toLowerCase());
@@ -1339,15 +1344,15 @@
 	});
 </script>
 
-<div class="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden">
+	<div class="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden">
 	<div class="shrink-0 flex flex-wrap justify-between items-center gap-3">
-		<PageHeader icon={Box} title="Containers" count={containers.length} />
+		<PageHeader icon={Box} title={$_('containers.title')} count={containers.length} />
 		<div class="flex flex-wrap items-center gap-2">
 			<div class="relative">
 				<Search class="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
 				<Input
 					type="text"
-					placeholder="Search containers..."
+					placeholder={$_('containers.search_placeholder')}
 					bind:value={searchQuery}
 					onkeydown={(e) => e.key === 'Escape' && (searchQuery = '')}
 					class="pl-8 h-8 w-48 text-sm"
@@ -1357,8 +1362,8 @@
 			<MultiSelectFilter
 				bind:value={statusFilter}
 				options={statusTypes}
-				placeholder="All statuses"
-				pluralLabel="statuses"
+				placeholder={$_('containers.all_statuses')}
+				pluralLabel={$_('containers.statuses')}
 				width="w-44"
 				defaultIcon={Box}
 			/>
@@ -1366,7 +1371,7 @@
 				{#if $canAccess('containers', 'create')}
 				<Button size="sm" variant="secondary" onclick={() => (showCreateModal = true)}>
 					<Plus class="w-3.5 h-3.5 mr-1" />
-					Create
+					{$_('common.create')}
 				</Button>
 				{/if}
 				<Button
@@ -1374,7 +1379,7 @@
 					variant="outline"
 					onclick={checkForUpdates}
 					disabled={updateCheckStatus === 'checking'}
-					title="Check for available updates"
+					title={$_('containers.check_for_updates')}
 				>
 					{#if updateCheckStatus === 'checking'}
 						<CircleArrowUp class="w-3.5 h-3.5 mr-1 animate-spin" />
@@ -1385,7 +1390,7 @@
 					{:else}
 						<CircleArrowUp class="w-3.5 h-3.5 mr-1" />
 					{/if}
-					Check for updates
+					{$_('containers.check_for_updates')}
 				</Button>
 				{#if batchUpdateContainerIds.length > 0}
 				<Button
@@ -1393,18 +1398,18 @@
 					variant="outline"
 					onclick={updateAllContainers}
 					class="border-amber-500/40 text-amber-600 hover:bg-amber-500/10 hover:border-amber-500"
-					title="Update all containers with available updates"
+					title={$_('containers.update_all_available_title')}
 				>
 					<CircleArrowUp class="w-3.5 h-3.5 mr-1" />
-					Update all ({batchUpdateContainerIds.length})
+					{$_('containers.update_all', { values: { count: batchUpdateContainerIds.length } })}
 				</Button>
 				{/if}
 				{#if $canAccess('containers', 'remove')}
 				<ConfirmPopover
 					open={confirmPrune}
-					action="Prune"
-					itemType="stopped containers"
-					title="Prune containers"
+					action={$_('containers.prune')}
+					itemType={$_('containers.stopped_containers')}
+					title={$_('containers.prune_containers')}
 					position="left"
 					onConfirm={pruneContainers}
 					onOpenChange={(open) => confirmPrune = open}
@@ -1421,18 +1426,21 @@
 							{:else}
 								<Icon iconNode={broom} class="w-3.5 h-3.5 mr-1" />
 							{/if}
-							Prune
+							{$_('containers.prune')}
 						</Button>
 					{/snippet}
 				</ConfirmPopover>
 				{/if}
-				<Button size="sm" variant="outline" onclick={fetchContainers}>Refresh</Button>
+				<Button size="sm" variant="outline" onclick={fetchContainers}>{$_('common.refresh')}</Button>
 				<Button
 					size="sm"
 					variant="outline"
 					onclick={toggleLayoutMode}
 					class="h-8 w-8 p-0"
-					title={layoutMode === 'horizontal' ? 'Switch to vertical layout (logs/terminal on side)' : 'Switch to horizontal layout (logs/terminal below)'}
+					title={layoutMode === 'horizontal'
+						? $_('containers.layout_vertical_hint')
+						: $_('containers.layout_horizontal_hint')
+					}
 				>
 					{#if layoutMode === 'horizontal'}
 						<LayoutPanelLeft class="w-4 h-4" />
@@ -1447,21 +1455,21 @@
 	<!-- Selection bar -->
 	{#if selectedContainers.size > 0}
 		<div class="flex items-center gap-2 text-xs text-muted-foreground">
-			<span>{selectedInFilter.length} selected</span>
+			<span>{$_('containers.selected_count', { values: { count: selectedInFilter.length } })}</span>
 			<button
 				type="button"
 				class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-border shadow-sm hover:border-foreground/30 hover:shadow transition-all"
 				onclick={selectNone}
 				disabled={bulkActionInProgress}
 			>
-				Clear
+				{$_('common.clear')}
 			</button>
 			{#if selectedStopped.length > 0 && $canAccess('containers', 'start')}
 				<ConfirmPopover
 					open={confirmBulkStart}
-					action="Start"
-					itemType="{selectedStopped.length} stopped container{selectedStopped.length !== 1 ? 's' : ''}"
-					title="Start {selectedStopped.length}"
+					action={$_('containers.start')}
+					itemType={selectedStopped.length === 1 ? $_('containers.stopped_container') : $_('containers.stopped_containers')}
+					title={`${$_('containers.start')} ${selectedStopped.length}`}
 					variant="secondary"
 					unstyled
 					onConfirm={bulkStart}
@@ -1470,7 +1478,7 @@
 					{#snippet children({ open })}
 						<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-border shadow-sm hover:text-green-600 hover:border-green-500/40 hover:shadow transition-all cursor-pointer {bulkActionInProgress ? 'opacity-50' : ''}">
 							<Play class="w-3 h-3" />
-							Start
+							{$_('containers.start')}
 						</span>
 					{/snippet}
 				</ConfirmPopover>
@@ -1478,9 +1486,9 @@
 			{#if selectedRunning.length > 0 && $canAccess('containers', 'stop')}
 				<ConfirmPopover
 					open={confirmBulkStop}
-					action="Stop"
-					itemType="{selectedRunning.length} running container{selectedRunning.length !== 1 ? 's' : ''}"
-					title="Stop {selectedRunning.length}"
+					action={$_('containers.stop')}
+					itemType={selectedRunning.length === 1 ? $_('containers.running_container') : $_('containers.running_containers')}
+					title={`${$_('containers.stop')} ${selectedRunning.length}`}
 					unstyled
 					onConfirm={bulkStop}
 					onOpenChange={(open) => confirmBulkStop = open}
@@ -1488,15 +1496,15 @@
 					{#snippet children({ open })}
 						<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-border shadow-sm hover:text-red-600 hover:border-red-500/40 hover:shadow transition-all cursor-pointer {bulkActionInProgress ? 'opacity-50' : ''}">
 							<Square class="w-3 h-3" />
-							Stop
+							{$_('containers.stop')}
 						</span>
 					{/snippet}
 				</ConfirmPopover>
 				<ConfirmPopover
 					open={confirmBulkPause}
-					action="Pause"
-					itemType="{selectedRunning.length} running container{selectedRunning.length !== 1 ? 's' : ''}"
-					title="Pause {selectedRunning.length}"
+					action={$_('containers.pause')}
+					itemType={selectedRunning.length === 1 ? $_('containers.running_container') : $_('containers.running_containers')}
+					title={`${$_('containers.pause')} ${selectedRunning.length}`}
 					variant="secondary"
 					unstyled
 					onConfirm={bulkPause}
@@ -1505,7 +1513,7 @@
 					{#snippet children({ open })}
 						<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-border shadow-sm hover:text-yellow-600 hover:border-yellow-500/40 hover:shadow transition-all cursor-pointer {bulkActionInProgress ? 'opacity-50' : ''}">
 							<Pause class="w-3 h-3" />
-							Pause
+							{$_('containers.pause')}
 						</span>
 					{/snippet}
 				</ConfirmPopover>
@@ -1513,9 +1521,9 @@
 			{#if selectedPaused.length > 0 && $canAccess('containers', 'start')}
 				<ConfirmPopover
 					open={confirmBulkUnpause}
-					action="Unpause"
-					itemType="{selectedPaused.length} paused container{selectedPaused.length !== 1 ? 's' : ''}"
-					title="Unpause {selectedPaused.length}"
+					action={$_('containers.unpause')}
+					itemType={selectedPaused.length === 1 ? $_('containers.paused_container') : $_('containers.paused_containers')}
+					title={`${$_('containers.unpause')} ${selectedPaused.length}`}
 					variant="secondary"
 					unstyled
 					onConfirm={bulkUnpause}
@@ -1524,7 +1532,7 @@
 					{#snippet children({ open })}
 						<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-border shadow-sm hover:text-blue-600 hover:border-blue-500/40 hover:shadow transition-all cursor-pointer {bulkActionInProgress ? 'opacity-50' : ''}">
 							<Play class="w-3 h-3" />
-							Unpause
+							{$_('containers.unpause')}
 						</span>
 					{/snippet}
 				</ConfirmPopover>
@@ -1532,9 +1540,9 @@
 			{#if $canAccess('containers', 'restart')}
 			<ConfirmPopover
 				open={confirmBulkRestart}
-				action="Restart"
-				itemType="{selectedInFilter.length} container{selectedInFilter.length !== 1 ? 's' : ''}"
-				title="Restart {selectedInFilter.length}"
+				action={$_('containers.restart')}
+				itemType={selectedInFilter.length === 1 ? $_('containers.container') : $_('containers.containers')}
+				title={`${$_('containers.restart')} ${selectedInFilter.length}`}
 				variant="secondary"
 				unstyled
 				onConfirm={bulkRestart}
@@ -1543,7 +1551,7 @@
 				{#snippet children({ open })}
 					<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-border shadow-sm hover:border-foreground/30 hover:shadow transition-all cursor-pointer {bulkActionInProgress ? 'opacity-50' : ''}">
 						<RotateCw class="w-3 h-3" />
-						Restart
+						{$_('containers.restart')}
 					</span>
 				{/snippet}
 			</ConfirmPopover>
@@ -1551,9 +1559,9 @@
 			{#if $canAccess('containers', 'remove')}
 			<ConfirmPopover
 				open={confirmBulkRemove}
-				action="Remove"
-				itemType="{selectedInFilter.length} container{selectedInFilter.length !== 1 ? 's' : ''}"
-				title="Remove {selectedInFilter.length}"
+				action={$_('containers.remove')}
+				itemType={selectedInFilter.length === 1 ? $_('containers.container') : $_('containers.containers')}
+				title={`${$_('containers.remove')} ${selectedInFilter.length}`}
 				unstyled
 				onConfirm={bulkRemove}
 				onOpenChange={(open) => confirmBulkRemove = open}
@@ -1561,7 +1569,7 @@
 				{#snippet children({ open })}
 					<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-border shadow-sm hover:text-destructive hover:border-destructive/40 hover:shadow transition-all cursor-pointer {bulkActionInProgress ? 'opacity-50' : ''}">
 						<Trash2 class="w-3 h-3" />
-						Remove
+						{$_('containers.remove')}
 					</span>
 				{/snippet}
 			</ConfirmPopover>
@@ -1572,10 +1580,10 @@
 				class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-amber-500/40 shadow-sm text-amber-600 hover:border-amber-500 hover:shadow transition-all cursor-pointer {bulkActionInProgress ? 'opacity-50' : ''}"
 				onclick={updateSelectedContainers}
 				disabled={bulkActionInProgress}
-				title="Update selected containers to latest image"
+				title={$_('containers.update_selected_title')}
 			>
 				<CircleArrowUp class="w-3 h-3" />
-				Update {selectedWithUpdatesCount}
+				{$_('common.update')} {selectedWithUpdatesCount}
 			</button>
 			{/if}
 			{#if bulkActionInProgress}
@@ -1589,8 +1597,8 @@
 	{:else if !loading && containers.length === 0}
 		<EmptyState
 			icon={Box}
-			title="No containers found"
-			description="Create a new container to get started"
+			title={$_('containers.no_containers')}
+			description={$_('containers.no_containers_desc')}
 		/>
 	{:else}
 		<!-- Main content area - changes based on layout mode -->
@@ -1636,7 +1644,7 @@
 					{:else if column.id === 'image'}
 						<div class="flex items-center gap-1.5 {$appSettings.highlightUpdates && containersWithUpdatesSet.has(container.id) ? 'update-border' : ''}">
 							{#if containersWithUpdatesSet.has(container.id)}
-								<span title="Update available">
+								<span title={$_('containers.update_available')}>
 									<CircleArrowUp class="w-3 h-3 text-amber-500 {$appSettings.highlightUpdates ? 'glow-amber' : ''} shrink-0" />
 								</span>
 							{/if}
@@ -1668,7 +1676,7 @@
 						<span class="text-xs text-muted-foreground whitespace-nowrap">{formatUptime(container.status)}</span>
 					{:else if column.id === 'restartCount'}
 						{#if container.restartCount > 0}
-							<span class="text-xs text-red-500 text-center block" title="{container.restartCount} restarts">{container.restartCount}</span>
+							<span class="text-xs text-red-500 text-center block" title={$_('containers.restarts_count', { values: { count: container.restartCount } })}>{container.restartCount}</span>
 						{:else}
 							<span class="text-gray-400 dark:text-gray-600 text-xs text-center block">-</span>
 						{/if}
@@ -1698,7 +1706,7 @@
 						<div class="{isFieldHighlighted(container.id, 'network') ? 'stat-highlight' : ''} text-right whitespace-nowrap">
 							{#if containerStats.get(container.id)}
 								{@const stats = containerStats.get(container.id)}
-								<span class="text-xs font-mono text-muted-foreground" title="↓{formatBytes(stats.networkRx)} received / ↑{formatBytes(stats.networkTx)} sent">
+								<span class="text-xs font-mono text-muted-foreground" title={$_('containers.network_io_title', { values: { rx: formatBytes(stats.networkRx), tx: formatBytes(stats.networkTx) } })}>
 									<span class="text-2xs text-blue-400">↓</span>{formatBytes(stats.networkRx, 0)} <span class="text-2xs text-orange-400">↑</span>{formatBytes(stats.networkTx, 0)}
 								</span>
 							{:else if container.state === 'running'}
@@ -1711,7 +1719,7 @@
 						<div class="{isFieldHighlighted(container.id, 'disk') ? 'stat-highlight' : ''} text-right whitespace-nowrap">
 							{#if containerStats.get(container.id)}
 								{@const stats = containerStats.get(container.id)}
-								<span class="text-xs font-mono text-muted-foreground" title="↓{formatBytes(stats.blockRead)} read / ↑{formatBytes(stats.blockWrite)} written">
+								<span class="text-xs font-mono text-muted-foreground" title={$_('containers.disk_io_title', { values: { read: formatBytes(stats.blockRead), write: formatBytes(stats.blockWrite) } })}>
 									<span class="text-2xs text-green-400">r</span>{formatBytes(stats.blockRead, 0)} <span class="text-2xs text-yellow-400">w</span>{formatBytes(stats.blockWrite, 0)}
 								</span>
 							{:else if container.state === 'running'}
@@ -1734,7 +1742,7 @@
 											rel="noopener noreferrer"
 											onclick={(e) => e.stopPropagation()}
 											class="inline-flex items-center gap-0.5 text-xs bg-muted hover:bg-blue-500/20 hover:text-blue-500 px-1 py-0.5 rounded transition-colors"
-											title="Open {url} in new tab"
+											title={$_('containers.open_in_new_tab', { values: { url } })}
 										>
 											<code>{port.display}</code>
 											<ExternalLink class="w-2.5 h-2.5 text-muted-foreground" />
@@ -1787,7 +1795,7 @@
 								<button
 									type="button"
 									onclick={() => updateSingleContainer(container.id, container.name)}
-									title="Update available - click to update"
+									title={$_('containers.update_available_click')}
 									class="p-0.5 rounded hover:bg-muted transition-colors cursor-pointer"
 								>
 									<CircleArrowUp class="w-3 h-3 text-amber-500 {$appSettings.highlightUpdates ? 'glow-amber' : ''}" />
@@ -1797,10 +1805,10 @@
 								{#if $canAccess('containers', 'stop')}
 								<ConfirmPopover
 									open={confirmStopId === container.id}
-									action="Stop"
-									itemType="container"
+									action={$_('containers.stop')}
+									itemType={$_('containers.container')}
 									itemName={container.name}
-									title="Stop"
+									title={$_('containers.stop')}
 									onConfirm={() => stopContainer(container.id)}
 									onOpenChange={(open) => confirmStopId = open ? container.id : null}
 								>
@@ -1812,7 +1820,7 @@
 								<button
 									type="button"
 									onclick={() => pauseContainer(container.id)}
-									title="Pause"
+									title={$_('containers.pause')}
 									class="p-0.5 rounded hover:bg-muted transition-colors opacity-70 hover:opacity-100 cursor-pointer"
 								>
 									<Pause class="w-3 h-3 text-muted-foreground hover:text-yellow-500" />
@@ -1824,7 +1832,7 @@
 								<button
 									type="button"
 									onclick={() => unpauseContainer(container.id)}
-									title="Unpause"
+									title={$_('containers.unpause')}
 									class="p-0.5 rounded hover:bg-muted transition-colors opacity-70 hover:opacity-100 cursor-pointer"
 								>
 									<Play class="w-3 h-3 text-muted-foreground hover:text-green-500" />
@@ -1835,7 +1843,7 @@
 								<button
 									type="button"
 									onclick={() => startContainer(container.id)}
-									title="Start"
+									title={$_('containers.start')}
 									class="p-0.5 rounded hover:bg-muted transition-colors opacity-70 hover:opacity-100 cursor-pointer"
 								>
 									<Play class="w-3 h-3 text-muted-foreground hover:text-green-500" />
@@ -1845,10 +1853,10 @@
 							{#if $canAccess('containers', 'restart')}
 							<ConfirmPopover
 								open={confirmRestartId === container.id}
-								action="Restart"
-								itemType="container"
+								action={$_('containers.restart')}
+								itemType={$_('containers.container')}
 								itemName={container.name}
-								title="Restart"
+								title={$_('containers.restart')}
 								variant="secondary"
 								onConfirm={() => restartContainer(container.id)}
 								onOpenChange={(open) => confirmRestartId = open ? container.id : null}
@@ -1861,7 +1869,7 @@
 							<button
 								type="button"
 								onclick={() => inspectContainer(container)}
-								title="View details"
+								title={$_('containers.view_details')}
 								class="p-0.5 rounded hover:bg-muted transition-colors opacity-70 hover:opacity-100 cursor-pointer"
 							>
 								<Eye class="w-3 h-3 text-muted-foreground hover:text-foreground" />
@@ -1870,7 +1878,7 @@
 							<button
 								type="button"
 								onclick={() => browseFiles(container)}
-								title="Browse files"
+								title={$_('containers.browse_files')}
 								class="p-0.5 rounded hover:bg-muted transition-colors opacity-70 hover:opacity-100 cursor-pointer"
 							>
 								<FolderOpen class="w-3 h-3 text-muted-foreground hover:text-foreground" />
@@ -1880,7 +1888,7 @@
 							<button
 								type="button"
 								onclick={() => editContainer(container.id)}
-								title="Edit"
+								title={$_('containers.edit')}
 								class="p-0.5 rounded hover:bg-muted transition-colors opacity-70 hover:opacity-100 cursor-pointer"
 							>
 								<Pencil class="w-3 h-3 text-muted-foreground hover:text-foreground" />
@@ -1891,7 +1899,7 @@
 								<button
 									type="button"
 									onclick={(e) => { e.stopPropagation(); currentLogsContainerId = container.id; }}
-									title="Show logs"
+									title={$_('containers.show_logs')}
 									class="p-0.5 rounded hover:bg-muted transition-colors opacity-70 hover:opacity-100 cursor-pointer"
 								>
 									<FileText class="w-4 h-4 text-blue-400" style="filter: drop-shadow(0 0 4px rgba(96,165,250,0.9)) drop-shadow(0 0 8px rgba(96,165,250,0.6));" strokeWidth={2.5} />
@@ -1900,7 +1908,7 @@
 								<button
 									type="button"
 									onclick={(e) => { e.stopPropagation(); showLogs(container); }}
-									title="Open logs"
+									title={$_('containers.open_logs')}
 									class="p-0.5 rounded hover:bg-muted transition-colors opacity-70 hover:opacity-100 cursor-pointer"
 								>
 									<FileText class="w-3 h-3 text-muted-foreground hover:text-foreground" />
@@ -1912,7 +1920,7 @@
 								<button
 									type="button"
 									onclick={(e) => { e.stopPropagation(); currentTerminalContainerId = container.id; }}
-									title="Show terminal"
+									title={$_('containers.show_terminal')}
 									class="p-0.5 rounded hover:bg-muted transition-colors opacity-70 hover:opacity-100 cursor-pointer"
 								>
 									<Terminal class="w-4 h-4 text-green-400" style="filter: drop-shadow(0 0 4px rgba(74,222,128,0.9)) drop-shadow(0 0 8px rgba(74,222,128,0.6));" strokeWidth={2.5} />
@@ -1934,11 +1942,11 @@
 										</div>
 										<div class="p-3 space-y-3">
 											<div class="space-y-1.5">
-												<Label class="text-xs">Shell</Label>
+												<Label class="text-xs">{$_('containers.shell')}</Label>
 												<Select.Root type="single" bind:value={terminalShell}>
 													<Select.Trigger class="w-full h-8 text-xs">
 														<Shell class="w-3 h-3 mr-1.5 text-muted-foreground" />
-														<span>{shellOptions.find(o => o.value === terminalShell)?.label || 'Select'}</span>
+														<span>{shellOptions.find(o => o.value === terminalShell)?.label || $_('common.select')}</span>
 													</Select.Trigger>
 													<Select.Content>
 														{#each shellOptions as option}
@@ -1951,11 +1959,11 @@
 												</Select.Root>
 											</div>
 											<div class="space-y-1.5">
-												<Label class="text-xs">User</Label>
+												<Label class="text-xs">{$_('containers.user')}</Label>
 												<Select.Root type="single" bind:value={terminalUser}>
 													<Select.Trigger class="w-full h-8 text-xs">
 														<User class="w-3 h-3 mr-1.5 text-muted-foreground" />
-														<span>{userOptions.find(o => o.value === terminalUser)?.label || 'Select'}</span>
+														<span>{userOptions.find(o => o.value === terminalUser)?.label || $_('common.select')}</span>
 													</Select.Trigger>
 													<Select.Content>
 														{#each userOptions as option}
@@ -1969,7 +1977,7 @@
 											</div>
 											<Button size="sm" class="w-full h-7 text-xs" onclick={() => startTerminal(container)}>
 												<Terminal class="w-3 h-3 mr-1" />
-												Connect
+												{$_('containers.connect')}
 											</Button>
 										</div>
 									</Popover.Content>
@@ -1979,10 +1987,10 @@
 							{#if $canAccess('containers', 'remove')}
 							<ConfirmPopover
 								open={confirmDeleteId === container.id}
-								action="Delete"
-								itemType="container"
+								action={$_('common.delete')}
+								itemType={$_('containers.container')}
 								itemName={container.name}
-								title="Remove"
+								title={$_('containers.remove')}
 								onConfirm={() => removeContainer(container.id)}
 								onOpenChange={(open) => confirmDeleteId = open ? container.id : null}
 							>
@@ -2182,4 +2190,3 @@
 		box-shadow: 0 0 8px rgb(245 158 11 / 0.4);
 	}
 </style>
-

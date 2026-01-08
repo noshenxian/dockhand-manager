@@ -9,6 +9,7 @@
 	import { canAccess } from '$lib/stores/auth';
 	import GitRepositoryModal from './GitRepositoryModal.svelte';
 	import { EmptyState } from '$lib/components/ui/empty-state';
+	import { _ } from '$lib/i18n';
 
 	interface GitCredential {
 		id: number;
@@ -41,7 +42,7 @@
 			repositories = await response.json();
 		} catch (error) {
 			console.error('Failed to fetch git repositories:', error);
-			toast.error('Failed to fetch git repositories');
+			toast.error($_('settings.git.repositories.fetch_failed'));
 		} finally {
 			loading = false;
 		}
@@ -53,7 +54,7 @@
 			credentials = await response.json();
 		} catch (error) {
 			console.error('Failed to fetch git credentials:', error);
-			toast.error('Failed to fetch git credentials');
+			toast.error($_('settings.git.credentials.fetch_failed'));
 		}
 	}
 
@@ -76,13 +77,13 @@
 			const response = await fetch(`/api/git/repositories/${id}`, { method: 'DELETE' });
 			if (response.ok) {
 				await fetchRepositories();
-				toast.success('Repository deleted');
+				toast.success($_('settings.git.repositories.delete_success'));
 			} else {
-				toast.error('Failed to delete repository');
+				toast.error($_('settings.git.repositories.delete_failed'));
 			}
 		} catch (error) {
 			console.error('Failed to delete repository:', error);
-			toast.error('Failed to delete repository');
+			toast.error($_('settings.git.repositories.delete_failed'));
 		}
 	}
 
@@ -96,16 +97,20 @@
 				testResult = {
 					id,
 					success: true,
-					message: `Connected! Branch: ${data.branch}, Last commit: ${data.lastCommit}`
+					message: $_('settings.git.repositories.test_success_detail', {
+						values: { branch: data.branch, commit: data.lastCommit }
+					})
 				};
-				toast.success('Repository connection successful');
+				toast.success($_('settings.git.repositories.test_success'));
 			} else {
 				testResult = {
 					id,
 					success: false,
-					message: data.error || 'Connection failed'
+					message: data.error || $_('settings.git.repositories.connection_failed')
 				};
-				toast.error(`Connection failed: ${data.error || 'Unknown error'}`);
+				toast.error($_('settings.git.repositories.connection_failed_detail', {
+					values: { error: data.error || $_('settings.git.unknown_error') }
+				}));
 			}
 			// Auto-clear after 5 seconds
 			setTimeout(() => {
@@ -117,9 +122,9 @@
 			testResult = {
 				id,
 				success: false,
-				message: 'Failed to test connection'
+				message: $_('settings.git.repositories.test_failed')
 			};
-			toast.error('Failed to test repository connection');
+			toast.error($_('settings.git.repositories.test_failed'));
 		} finally {
 			testingId = null;
 		}
@@ -134,26 +139,26 @@
 <div class="space-y-4">
 	<div class="flex justify-between items-center">
 		<div>
-			<h3 class="text-lg font-medium">Git repositories</h3>
-			<p class="text-sm text-muted-foreground">Manage Git repositories that can be used to deploy stacks</p>
+			<h3 class="text-lg font-medium">{$_('settings.git.repositories.title')}</h3>
+			<p class="text-sm text-muted-foreground">{$_('settings.git.repositories.description')}</p>
 		</div>
 		{#if $canAccess('settings', 'edit')}
 			<Button size="sm" onclick={() => openModal()}>
 				<Plus class="w-4 h-4 mr-1" />
-				Add repository
+				{$_('settings.git.repositories.add')}
 			</Button>
 		{/if}
 	</div>
 
 	{#if loading}
-		<p class="text-sm text-muted-foreground">Loading repositories...</p>
+		<p class="text-sm text-muted-foreground">{$_('settings.git.repositories.loading')}</p>
 	{:else if repositories.length === 0}
 		<Card.Root>
 			<Card.Content>
 				<EmptyState
 					icon={FolderGit2}
-					title="No Git repositories configured"
-					description="Add a repository to use it when deploying stacks from Git"
+					title={$_('settings.git.repositories.empty_title')}
+					description={$_('settings.git.repositories.empty_desc')}
 				/>
 			</Card.Content>
 		</Card.Root>
@@ -182,14 +187,14 @@
 							</span>
 						{/if}
 						{#if repo.credentialName}
-							<span class="flex items-center gap-1 text-xs text-muted-foreground" title="Using credential: {repo.credentialName}">
+							<span class="flex items-center gap-1 text-xs text-muted-foreground" title={$_('settings.git.repositories.using_credential', { values: { name: repo.credentialName } })}>
 								<Lock class="w-3 h-3" />
 								<span class="hidden sm:inline">{repo.credentialName}</span>
 							</span>
 						{:else}
-							<span class="flex items-center gap-1 text-xs text-muted-foreground" title="Public repository">
+							<span class="flex items-center gap-1 text-xs text-muted-foreground" title={$_('settings.git.repositories.public_repo')}>
 								<Globe class="w-3 h-3" />
-								<span class="hidden sm:inline">Public</span>
+								<span class="hidden sm:inline">{$_('settings.git.repositories.public')}</span>
 							</span>
 						{/if}
 						<Badge variant="outline" class="text-xs flex items-center gap-1">
@@ -202,7 +207,7 @@
 							class="h-7 w-7"
 							onclick={() => testRepository(repo.id)}
 							disabled={testingId === repo.id}
-							title="Test connection"
+							title={$_('settings.git.repositories.test_connection')}
 						>
 							{#if testingId === repo.id}
 								<Loader2 class="w-3.5 h-3.5 animate-spin" />
@@ -211,15 +216,15 @@
 							{/if}
 						</Button>
 						{#if $canAccess('settings', 'edit')}
-							<Button variant="ghost" size="icon" class="h-7 w-7" onclick={() => openModal(repo)} title="Edit repository">
+							<Button variant="ghost" size="icon" class="h-7 w-7" onclick={() => openModal(repo)} title={$_('settings.git.repositories.edit')}>
 								<Pencil class="w-3.5 h-3.5" />
 							</Button>
 							<ConfirmPopover
 								open={confirmDeleteId === repo.id}
-								action="Delete"
-								itemType="repository"
+								action={$_('common.delete')}
+								itemType={$_('settings.git.repositories.repository')}
 								itemName={repo.name}
-								title="Delete"
+								title={$_('common.delete')}
 								onConfirm={() => deleteRepository(repo.id)}
 								onOpenChange={(open) => confirmDeleteId = open ? repo.id : null}
 							>

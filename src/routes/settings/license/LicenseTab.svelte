@@ -8,6 +8,7 @@
 	import { Crown, Building2, Key, RefreshCw, ShieldCheck, XCircle } from 'lucide-svelte';
 	import { canAccess } from '$lib/stores/auth';
 	import { licenseStore } from '$lib/stores/license';
+	import { _ } from '$lib/i18n';
 
 	// License state
 	interface LicenseInfo {
@@ -43,7 +44,7 @@
 			licenseInfo = await response.json();
 		} catch (error) {
 			console.error('Failed to fetch license info:', error);
-			licenseInfo = { valid: false, active: false, error: 'Failed to fetch license info' };
+			licenseInfo = { valid: false, active: false, error: $_('settings.license_page.fetch_failed') };
 		} finally {
 			licenseLoading = false;
 		}
@@ -51,7 +52,7 @@
 
 	async function activateLicense() {
 		if (!licenseFormName.trim() || !licenseFormKey.trim()) {
-			licenseFormError = 'Name and license key are required';
+			licenseFormError = $_('settings.license_page.name_key_required');
 			return;
 		}
 
@@ -71,21 +72,21 @@
 			const result = await response.json();
 
 			if (!response.ok || result.error) {
-				licenseFormError = result.error || 'Failed to activate license';
+				licenseFormError = result.error || $_('settings.license_page.activate_failed');
 				return;
 			}
 
 			// Refresh license info and update global store
 			await fetchLicenseInfo();
 			await licenseStore.check();
-			toast.success('License activated successfully');
+			toast.success($_('settings.license_page.activated'));
 
 			// Clear form
 			licenseFormName = '';
 			licenseFormKey = '';
 		} catch (error) {
-			licenseFormError = 'Failed to activate license';
-			toast.error('Failed to activate license');
+			licenseFormError = $_('settings.license_page.activate_failed');
+			toast.error($_('settings.license_page.activate_failed'));
 		} finally {
 			licenseFormSaving = false;
 		}
@@ -96,10 +97,10 @@
 			await fetch('/api/license', { method: 'DELETE' });
 			await fetchLicenseInfo();
 			await licenseStore.check();
-			toast.success('License deactivated');
+			toast.success($_('settings.license_page.deactivated'));
 		} catch (error) {
 			console.error('Failed to deactivate license:', error);
-			toast.error('Failed to deactivate license');
+			toast.error($_('settings.license_page.deactivate_failed'));
 		}
 	}
 
@@ -114,9 +115,9 @@
 			<div class="flex items-start gap-3">
 				<Crown class="w-5 h-5 text-amber-500 mt-0.5" />
 				<div>
-					<p class="text-sm font-medium">License management</p>
+					<p class="text-sm font-medium">{$_('settings.license_page.title')}</p>
 					<p class="text-xs text-muted-foreground">
-						Activate your license to validate commercial use. <span class="font-medium">Enterprise</span> licenses unlock premium features including RBAC, LDAP and audit logs.
+						{$_('settings.license_page.description')}
 					</p>
 				</div>
 			</div>
@@ -127,7 +128,7 @@
 		<Card.Root>
 			<Card.Content class="py-8 text-center">
 				<RefreshCw class="w-6 h-6 mx-auto mb-2 animate-spin text-muted-foreground" />
-				<p class="text-sm text-muted-foreground">Loading license information...</p>
+				<p class="text-sm text-muted-foreground">{$_('settings.license_page.loading')}</p>
 			</Card.Content>
 		</Card.Root>
 	{:else if licenseInfo?.valid && licenseInfo?.active}
@@ -138,53 +139,53 @@
 				<Card.Title class="text-sm font-medium flex items-center gap-2">
 					{#if isEnterprise}
 						<Crown class="w-4 h-4 text-amber-500" />
-						Active Enterprise license
+						{$_('settings.license_page.active_enterprise')}
 					{:else}
 						<Building2 class="w-4 h-4 text-blue-500" />
-						Active SMB license
+						{$_('settings.license_page.active_smb')}
 					{/if}
 				</Card.Title>
 			</Card.Header>
 			<Card.Content class="space-y-4">
 				<div class="grid grid-cols-2 gap-4 text-sm">
 					<div>
-						<p class="text-muted-foreground">Licensed to</p>
+						<p class="text-muted-foreground">{$_('settings.license_page.licensed_to')}</p>
 						<p class="font-medium">{licenseInfo.payload?.name}</p>
 					</div>
 					<div>
-						<p class="text-muted-foreground">License type</p>
+						<p class="text-muted-foreground">{$_('settings.license_page.license_type')}</p>
 						<p class="font-medium flex items-center gap-1">
 							{#if isEnterprise}
 								<Crown class="w-3.5 h-3.5 text-amber-500" />
-								<span class="text-amber-600 dark:text-amber-400">Enterprise</span>
+								<span class="text-amber-600 dark:text-amber-400">{$_('settings.license_page.enterprise')}</span>
 							{:else}
 								<Building2 class="w-3.5 h-3.5 text-blue-500" />
-								<span class="text-blue-600 dark:text-blue-400">SMB</span>
+								<span class="text-blue-600 dark:text-blue-400">{$_('settings.license_page.smb')}</span>
 							{/if}
 						</p>
 					</div>
 					<div>
-						<p class="text-muted-foreground">Licensed host</p>
+						<p class="text-muted-foreground">{$_('settings.license_page.licensed_host')}</p>
 						<p class="font-medium font-mono text-xs">{licenseInfo.payload?.host}</p>
 					</div>
 					<div>
-						<p class="text-muted-foreground">Issued</p>
+						<p class="text-muted-foreground">{$_('settings.license_page.issued')}</p>
 						<p class="font-medium">{new Date(licenseInfo.payload?.issued || '').toLocaleDateString()}</p>
 					</div>
 					<div>
-						<p class="text-muted-foreground">Expires</p>
-						<p class="font-medium">{licenseInfo.payload?.expires ? new Date(licenseInfo.payload.expires).toLocaleDateString() : 'Never (Perpetual)'}</p>
+						<p class="text-muted-foreground">{$_('settings.license_page.expires')}</p>
+						<p class="font-medium">{licenseInfo.payload?.expires ? new Date(licenseInfo.payload.expires).toLocaleDateString() : $_('settings.license_page.never')}</p>
 					</div>
 				</div>
 				<div class="pt-2 border-t">
-					<p class="text-xs text-muted-foreground mb-2">Current hostname</p>
+					<p class="text-xs text-muted-foreground mb-2">{$_('settings.license_page.current_hostname')}</p>
 					<code class="text-xs bg-muted px-2 py-1 rounded">{licenseInfo.hostname}</code>
 				</div>
 				{#if $canAccess('settings', 'edit')}
 				<div class="flex justify-end">
 					<Button variant="outline" size="sm" onclick={deactivateLicense}>
 						<XCircle class="w-4 h-4 mr-1" />
-						Deactivate license
+						{$_('settings.license_page.deactivate')}
 					</Button>
 				</div>
 				{/if}
@@ -196,7 +197,7 @@
 			<Card.Header>
 				<Card.Title class="text-sm font-medium flex items-center gap-2">
 					<Key class="w-4 h-4" />
-					Activate license
+					{$_('settings.license_page.activate')}
 				</Card.Title>
 			</Card.Header>
 			<Card.Content class="space-y-4">
@@ -213,30 +214,30 @@
 				{/if}
 
 				<div class="space-y-2">
-					<Label for="license-name">License name</Label>
+					<Label for="license-name">{$_('settings.license_page.license_name')}</Label>
 					<Input
 						id="license-name"
 						bind:value={licenseFormName}
-						placeholder="Your Company Name"
+						placeholder={$_('settings.license_page.placeholder_name')}
 						disabled={!$canAccess('settings', 'edit')}
 					/>
-					<p class="text-xs text-muted-foreground">Enter the name exactly as provided with your license</p>
+					<p class="text-xs text-muted-foreground">{$_('settings.license_page.name_hint')}</p>
 				</div>
 
 				<div class="space-y-2">
-					<Label for="license-key">License key</Label>
+					<Label for="license-key">{$_('settings.license_page.license_key')}</Label>
 					<textarea
 						id="license-key"
 						bind:value={licenseFormKey}
-						placeholder="Paste your license key here..."
+						placeholder={$_('settings.license_page.placeholder_key')}
 						class="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring font-mono"
 						disabled={!$canAccess('settings', 'edit')}
 					></textarea>
 				</div>
 
 				<div class="pt-2 border-t">
-					<p class="text-xs text-muted-foreground mb-2">Current hostname (for license validation)</p>
-					<code class="text-xs bg-muted px-2 py-1 rounded">{licenseInfo?.hostname || 'Unknown'}</code>
+					<p class="text-xs text-muted-foreground mb-2">{$_('settings.license_page.current_hostname_validation')}</p>
+					<code class="text-xs bg-muted px-2 py-1 rounded">{licenseInfo?.hostname || $_('common.unknown')}</code>
 				</div>
 
 				{#if $canAccess('settings', 'edit')}
@@ -247,7 +248,7 @@
 						{:else}
 							<ShieldCheck class="w-4 h-4 mr-1" />
 						{/if}
-						Activate license
+						{$_('settings.license_page.activate')}
 					</Button>
 				</div>
 				{/if}

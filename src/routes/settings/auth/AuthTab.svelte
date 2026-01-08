@@ -19,6 +19,7 @@
 	import { TogglePill } from '$lib/components/ui/toggle-pill';
 	import { canAccess, authStore } from '$lib/stores/auth';
 	import { licenseStore } from '$lib/stores/license';
+	import { _ } from '$lib/i18n';
 
 	// Sub-tab components
 	import UsersSubTab from './users/UsersSubTab.svelte';
@@ -91,18 +92,18 @@
 			});
 			if (response.ok) {
 				// authEnabled already updated via binding
-				toast.success(checked ? 'Authentication enabled' : 'Authentication disabled');
+				toast.success(checked ? $_('settings.auth_page.enabled') : $_('settings.auth_page.disabled'));
 				// Update global auth store so other components react immediately
 				await authStore.check();
 			} else {
 				const data = await response.json();
-				toast.error(data.error || 'Failed to update auth settings');
+				toast.error(data.error || $_('settings.auth_page.update_failed'));
 				// Revert toggle on error - checked is new value, so previous was !checked
 				authEnabled = !checked;
 			}
 		} catch (error) {
 			console.error('Failed to update auth settings:', error);
-			toast.error('Failed to update auth settings');
+			toast.error($_('settings.auth_page.update_failed'));
 			// Revert toggle on error
 			authEnabled = !checked;
 		} finally {
@@ -119,14 +120,14 @@
 				body: JSON.stringify({ sessionTimeout: sessionTimeout })
 			});
 			if (response.ok) {
-				toast.success('Settings saved');
+				toast.success($_('settings.auth_page.saved'));
 			} else {
 				console.error('Failed to save auth settings');
-				toast.error('Failed to save settings');
+				toast.error($_('settings.auth_page.save_failed'));
 			}
 		} catch (error) {
 			console.error('Failed to save auth settings:', error);
-			toast.error('Failed to save settings');
+			toast.error($_('settings.auth_page.save_failed'));
 		} finally {
 			authSaving = false;
 		}
@@ -158,7 +159,7 @@
 	<Shield class="w-5 h-5 text-muted-foreground mt-0.5" />
 	<div class="flex-1">
 		<div class="flex items-center gap-3">
-			<p class="text-sm font-medium">Authentication</p>
+			<p class="text-sm font-medium">{$_('settings.auth_page.title')}</p>
 			<TogglePill
 				bind:checked={authEnabled}
 				onchange={(checked) => handleAuthEnabledToggle(checked)}
@@ -167,17 +168,17 @@
 		</div>
 		<p class="text-xs text-muted-foreground mt-1">
 			{authEnabled
-				? 'Users must log in to access the application'
-				: 'Authentication is disabled - open access'}
+				? $_('settings.auth_page.enabled_desc')
+				: $_('settings.auth_page.disabled_desc')}
 		</p>
 		<p class="text-xs text-muted-foreground mt-1 flex items-center gap-1">
 			<Crown class="w-3 h-3 text-amber-500" />
 			{#if $licenseStore.isEnterprise}
 				{authEnabled
-					? 'Audit logging is active - all actions are recorded'
-					: 'Enable authentication to activate audit logging'}
+					? $_('settings.auth_page.audit_active')
+					: $_('settings.auth_page.audit_enable')}
 			{:else}
-				Enable authentication to activate audit logging
+				{$_('settings.auth_page.audit_enable')}
 			{/if}
 		</p>
 	</div>
@@ -193,7 +194,7 @@
 		onclick={() => (authSubTab = 'general')}
 	>
 		<Settings class="w-4 h-4" />
-		General
+		{$_('settings.auth_page.general')}
 	</button>
 	<button
 		class="flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-all {authSubTab ===
@@ -203,7 +204,7 @@
 		onclick={() => (authSubTab = 'local')}
 	>
 		<User class="w-4 h-4" />
-		Users
+		{$_('settings.auth_page.users')}
 	</button>
 	<button
 		class="flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-all {authSubTab ===
@@ -213,7 +214,7 @@
 		onclick={() => (authSubTab = 'sso')}
 	>
 		<LogIn class="w-4 h-4" />
-		SSO / OIDC
+		{$_('settings.auth_page.sso')}
 	</button>
 	<button
 		class="flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-all {authSubTab ===
@@ -223,7 +224,7 @@
 		onclick={() => (authSubTab = 'ldap')}
 	>
 		<Network class="w-4 h-4" />
-		LDAP / AD
+		{$_('settings.auth_page.ldap')}
 		<Crown class="w-3 h-3 text-amber-500" />
 	</button>
 	<button
@@ -234,7 +235,7 @@
 		onclick={() => (authSubTab = 'roles')}
 	>
 		<Shield class="w-4 h-4" />
-		Roles
+		{$_('settings.auth_page.roles')}
 		<Crown class="w-3 h-3 text-amber-500" />
 	</button>
 </div>
@@ -249,14 +250,14 @@
 				<Card.Header>
 					<Card.Title class="text-sm font-medium flex items-center gap-2">
 						<KeyRound class="w-4 h-4" />
-						Session settings
+						{$_('settings.auth_page.session_settings')}
 					</Card.Title>
 				</Card.Header>
 				<Card.Content class="space-y-4">
 					<div class="space-y-1.5">
-						<Label class="text-sm">Session timeout</Label>
+						<Label class="text-sm">{$_('settings.auth_page.session_timeout')}</Label>
 						<p class="text-xs text-muted-foreground mb-2">
-							How long until inactive sessions expire
+							{$_('settings.auth_page.session_timeout_desc')}
 						</p>
 						<div class="flex items-center gap-2">
 							<Input
@@ -268,9 +269,9 @@
 								class="w-32"
 								disabled={!$canAccess('settings', 'edit')}
 							/>
-							<span class="text-sm text-muted-foreground">seconds</span>
+							<span class="text-sm text-muted-foreground">{$_('settings.auth_page.seconds')}</span>
 							<span class="text-xs text-muted-foreground">
-								({Math.floor(sessionTimeout / 3600)} hours)
+								{$_('settings.auth_page.hours', { values: { count: Math.floor(sessionTimeout / 3600) } })}
 							</span>
 						</div>
 					</div>
@@ -281,7 +282,7 @@
 							{:else}
 								<Save class="w-4 h-4 mr-1" />
 							{/if}
-							Save settings
+							{$_('settings.auth_page.save_settings')}
 						</Button>
 					{/if}
 				</Card.Content>
@@ -289,7 +290,7 @@
 		{:else}
 			<div class="text-center py-12 text-muted-foreground">
 				<Shield class="w-12 h-12 mx-auto mb-3 opacity-30" />
-				<p class="text-sm">Enable authentication to configure session settings</p>
+				<p class="text-sm">{$_('settings.auth_page.enable_to_configure')}</p>
 			</div>
 		{/if}
 	</div>

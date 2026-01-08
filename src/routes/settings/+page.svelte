@@ -14,6 +14,7 @@
 		GitBranch
 	} from 'lucide-svelte';
 	import PageHeader from '$lib/components/PageHeader.svelte';
+	import { _ } from '$lib/i18n';
 
 	// Import tab components
 	import GeneralTab from './general/GeneralTab.svelte';
@@ -38,46 +39,46 @@
 
 <div class="flex-1 min-h-0 flex flex-col gap-3 overflow-hidden">
 	<div class="flex flex-wrap justify-between items-center gap-3">
-		<PageHeader icon={Settings} title="Settings" showConnection={false} />
+		<PageHeader icon={Settings} title={$_('settings.title')} showConnection={false} />
 	</div>
 
 	<Tabs.Root value={activeTab} onValueChange={handleTabChange} class="w-full flex-1 min-h-0 flex flex-col">
 		<Tabs.List class="w-full flex flex-wrap h-auto gap-1 p-1">
 			<Tabs.Trigger value="general" class="flex-1 flex items-center justify-center gap-1.5">
 				<Settings class="w-4 h-4" />
-				General
+				{$_('settings.general')}
 			</Tabs.Trigger>
 			<Tabs.Trigger value="environments" class="flex-1 flex items-center justify-center gap-1.5">
 				<Globe class="w-4 h-4" />
-				Environments
+				{$_('settings.environments_tab')}
 			</Tabs.Trigger>
 			<Tabs.Trigger value="registries" class="flex-1 flex items-center justify-center gap-1.5">
 				<Download class="w-4 h-4" />
-				Registries
+				{$_('settings.registries_tab')}
 			</Tabs.Trigger>
 			<Tabs.Trigger value="git" class="flex-1 flex items-center justify-center gap-1.5">
 				<GitBranch class="w-4 h-4" />
-				Git
+				{$_('settings.git')}
 			</Tabs.Trigger>
 			<Tabs.Trigger value="config-sets" class="flex-1 flex items-center justify-center gap-1.5">
 				<Layers class="w-4 h-4" />
-				Config sets
+				{$_('settings.config_sets')}
 			</Tabs.Trigger>
 			<Tabs.Trigger value="notifications" class="flex-1 flex items-center justify-center gap-1.5">
 				<Bell class="w-4 h-4" />
-				Notifications
+				{$_('settings.notifications_tab')}
 			</Tabs.Trigger>
 			<Tabs.Trigger value="auth" class="flex-1 flex items-center justify-center gap-1.5">
 				<Users class="w-4 h-4" />
-				Authentication
+				{$_('settings.auth')}
 			</Tabs.Trigger>
 			<Tabs.Trigger value="license" class="flex-1 flex items-center justify-center gap-1.5">
 				<Crown class="w-4 h-4" />
-				License
+				{$_('settings.license')}
 			</Tabs.Trigger>
 			<Tabs.Trigger value="about" class="flex-1 flex items-center justify-center gap-1.5">
 				<Info class="w-4 h-4" />
-				About
+				{$_('settings.about')}
 			</Tabs.Trigger>
 		</Tabs.List>
 

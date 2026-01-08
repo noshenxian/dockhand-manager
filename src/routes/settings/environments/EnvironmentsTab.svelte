@@ -34,6 +34,7 @@
 	import EnvironmentModal from './EnvironmentModal.svelte';
 	import { environments as environmentsStore } from '$lib/stores/environment';
 	import { dashboardData } from '$lib/stores/dashboard';
+	import { _ } from '$lib/i18n';
 
 	interface Props {
 		editEnvId?: string | null;
@@ -167,23 +168,23 @@
 
 	async function deleteEnvironment(id: number) {
 		const env = environments.find(e => e.id === id);
-		const name = env?.name || 'environment';
+		const name = env?.name || $_('settings.environments.environment');
 		try {
 			const response = await fetch(`/api/environments/${id}`, {
 				method: 'DELETE'
 			});
 
 			if (response.ok) {
-				toast.success(`Deleted ${name}`);
+				toast.success($_('settings.environments.deleted', { values: { name } }));
 				await fetchEnvironments();
 				// Refresh the global environments store so dropdown updates
 				environmentsStore.refresh();
 			} else {
 				const data = await response.json();
-				toast.error(data.error || 'Failed to delete environment');
+				toast.error(data.error || $_('settings.environments.delete_failed'));
 			}
 		} catch (error) {
-			toast.error('Failed to delete environment');
+			toast.error($_('settings.environments.delete_failed'));
 		}
 	}
 
@@ -228,7 +229,7 @@
 				const result = await response.json();
 				testResults[env.id] = result;
 			} catch (error) {
-				testResults[env.id] = { success: false, error: 'Connection failed' };
+			testResults[env.id] = { success: false, error: $_('settings.environments.connection_failed') };
 			}
 			testResults = { ...testResults };
 
@@ -327,17 +328,17 @@
 
 <!-- Environments Tab Content -->
 <div class="space-y-4">
-	<div class="flex justify-between items-center">
-		<div class="flex items-center gap-3">
-			<Badge variant="secondary" class="text-xs">{environments.length} total</Badge>
-		</div>
-		<div class="flex gap-2">
-			{#if $canAccess('environments', 'create')}
-				<Button size="sm" onclick={openAddEnvModal}>
-					<Plus class="w-4 h-4 mr-1" />
-					Add environment
-				</Button>
-			{/if}
+		<div class="flex justify-between items-center">
+			<div class="flex items-center gap-3">
+				<Badge variant="secondary" class="text-xs">{$_('settings.environments.total', { values: { count: environments.length } })}</Badge>
+			</div>
+			<div class="flex gap-2">
+				{#if $canAccess('environments', 'create')}
+					<Button size="sm" onclick={openAddEnvModal}>
+						<Plus class="w-4 h-4 mr-1" />
+						{$_('settings.environments.add')}
+					</Button>
+				{/if}
 			<Button
 				size="sm"
 				variant="outline"
@@ -350,30 +351,30 @@
 				{:else}
 					<Wifi class="w-4 h-4 mr-1" />
 				{/if}
-				<span class="w-14">Test all</span>
+				<span class="w-14">{$_('settings.environments.test_all')}</span>
 			</Button>
-			<Button size="sm" variant="outline" onclick={fetchEnvironments}>Refresh</Button>
+			<Button size="sm" variant="outline" onclick={fetchEnvironments}>{$_('common.refresh')}</Button>
 		</div>
 	</div>
 
 	{#if envLoading && environments.length === 0}
-		<p class="text-muted-foreground text-sm">Loading environments...</p>
+		<p class="text-muted-foreground text-sm">{$_('settings.environments.loading')}</p>
 	{:else if environments.length === 0}
-		<p class="text-muted-foreground text-sm">No environments found</p>
+		<p class="text-muted-foreground text-sm">{$_('settings.environments.empty')}</p>
 	{:else}
 		<div class="border rounded-lg overflow-hidden">
 			<Table.Root>
 				<Table.Header>
 					<Table.Row>
-						<Table.Head class="w-[200px]">Name</Table.Head>
-						<Table.Head>Connection</Table.Head>
-						<Table.Head class="w-[120px]">Labels</Table.Head>
-						<Table.Head class="w-[140px]">Timezone</Table.Head>
-						<Table.Head class="w-[100px]">Features</Table.Head>
-						<Table.Head class="w-[120px]">Status</Table.Head>
-						<Table.Head class="w-[100px]">Docker</Table.Head>
-						<Table.Head class="w-[100px]">Hawser</Table.Head>
-						<Table.Head class="w-[180px] text-right">Actions</Table.Head>
+						<Table.Head class="w-[200px]">{$_('common.name')}</Table.Head>
+						<Table.Head>{$_('settings.environments.connection')}</Table.Head>
+						<Table.Head class="w-[120px]">{$_('settings.environments.labels')}</Table.Head>
+						<Table.Head class="w-[140px]">{$_('settings.environments.timezone')}</Table.Head>
+						<Table.Head class="w-[100px]">{$_('settings.environments.features')}</Table.Head>
+						<Table.Head class="w-[120px]">{$_('common.status')}</Table.Head>
+						<Table.Head class="w-[100px]">{$_('settings.environments.docker')}</Table.Head>
+						<Table.Head class="w-[100px]">{$_('settings.environments.hawser')}</Table.Head>
+						<Table.Head class="w-[180px] text-right">{$_('common.actions')}</Table.Head>
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>
@@ -388,19 +389,19 @@
 								<div class="flex items-center gap-2">
 									<EnvIcon class="w-4 h-4 text-muted-foreground shrink-0" />
 									{#if env.connectionType === 'socket' || !env.connectionType}
-										<span title="Unix socket connection" class="shrink-0">
+										<span title={$_('dashboard.connection_socket')} class="shrink-0">
 											<Unplug class="w-3.5 h-3.5 text-cyan-500 glow-cyan" />
 										</span>
 									{:else if env.connectionType === 'direct'}
-										<span title="Direct Docker connection" class="shrink-0">
+										<span title={$_('dashboard.connection_direct')} class="shrink-0">
 											<Icon iconNode={whale} class="w-3.5 h-3.5 text-blue-500 glow-blue" />
 										</span>
 									{:else if env.connectionType === 'hawser-standard'}
-										<span title="Hawser agent (standard mode)" class="shrink-0">
+										<span title={$_('dashboard.connection_hawser_standard')} class="shrink-0">
 											<Route class="w-3.5 h-3.5 text-purple-500 glow-purple" />
 										</span>
 									{:else if env.connectionType === 'hawser-edge'}
-										<span title="Hawser agent (edge mode)" class="shrink-0">
+										<span title={$_('dashboard.connection_hawser_edge')} class="shrink-0">
 											<UndoDot class="w-3.5 h-3.5 text-green-500 glow-green" />
 										</span>
 									{/if}
@@ -414,7 +415,7 @@
 									{#if env.connectionType === 'socket' || !env.connectionType}
 										{env.socketPath || '/var/run/docker.sock'}
 									{:else if env.connectionType === 'hawser-edge'}
-										Edge connection (outbound)
+										{$_('settings.environments.edge_connection')}
 									{:else}
 										{env.protocol || 'http'}://{env.host}:{env.port || 2375}
 									{/if}
@@ -456,7 +457,7 @@
 							<Table.Cell>
 								<div class="flex items-center gap-1.5">
 									{#if env.updateCheckEnabled}
-										<span title={env.updateCheckAutoUpdate ? "Auto-update enabled" : "Update check enabled (notify only)"}>
+										<span title={env.updateCheckAutoUpdate ? $_('containers.auto_update_enabled') : $_('containers.update_check_enabled')}>
 											{#if env.updateCheckAutoUpdate}
 												<CircleArrowUp class="w-4 h-4 text-green-500 glow-green" />
 											{:else}
@@ -465,17 +466,17 @@
 										</span>
 									{/if}
 									{#if hasScannerEnabled}
-										<span title="Vulnerability scanning enabled">
+										<span title={$_('settings.environments.scanning_enabled')}>
 											<ShieldCheck class="w-4 h-4 text-green-500 glow-green" />
 										</span>
 									{/if}
 									{#if env.collectActivity}
-										<span title="Activity collection enabled">
+										<span title={$_('settings.environments.activity_enabled')}>
 											<Activity class="w-4 h-4 text-amber-500 glow-amber" />
 										</span>
 									{/if}
 									{#if env.collectMetrics}
-										<span title="Metrics collection enabled">
+										<span title={$_('settings.environments.metrics_enabled')}>
 											<Cpu class="w-4 h-4 text-sky-400 glow-sky" />
 										</span>
 									{/if}
@@ -495,7 +496,7 @@
 											{:else}
 												<Wifi class="w-3.5 h-3.5" />
 											{/if}
-											<span>Connected</span>
+											<span>{$_('settings.environments.connected')}</span>
 										</div>
 									{:else}
 										<div class="flex items-center gap-1.5 text-red-600 dark:text-red-400 text-sm" title={testResult.error}>
@@ -504,16 +505,16 @@
 											{:else}
 												<WifiOff class="w-3.5 h-3.5" />
 											{/if}
-											<span>Failed</span>
+											<span>{$_('settings.environments.failed')}</span>
 										</div>
 									{/if}
 								{:else if isTesting}
 									<div class="flex items-center gap-1.5 text-muted-foreground text-sm">
 										<RefreshCw class="w-3.5 h-3.5 animate-spin" />
-										<span>Testing...</span>
+										<span>{$_('settings.environments.testing')}</span>
 									</div>
 								{:else}
-									<span class="text-muted-foreground text-xs">Not tested</span>
+									<span class="text-muted-foreground text-xs">{$_('settings.environments.not_tested')}</span>
 								{/if}
 							</Table.Cell>
 
@@ -546,7 +547,7 @@
 										class="h-7 px-2"
 										onclick={() => testConnection(env.id)}
 										disabled={isTesting}
-										title="Test connection"
+										title={$_('settings.environments.test_connection')}
 									>
 										{#if isTesting}
 											<RefreshCw class="w-3.5 h-3.5 animate-spin" />
@@ -560,7 +561,7 @@
 											size="sm"
 											class="h-7 px-2"
 											onclick={() => openEditEnvModal(env)}
-											title="Edit environment"
+											title={$_('settings.environments.edit')}
 										>
 											<Pencil class="w-3.5 h-3.5" />
 										</Button>
@@ -568,10 +569,10 @@
 									{#if $canAccess('containers', 'remove') && $canAccess('images', 'remove') && $canAccess('volumes', 'remove') && $canAccess('networks', 'remove')}
 										<ConfirmPopover
 											open={confirmPruneEnvId === env.id}
-											action="Prune"
-											itemType="system on "
+											action={$_('settings.environments.prune')}
+											itemType={$_('settings.environments.system_on')}
 											itemName={env.name}
-											title="System prune"
+											title={$_('settings.environments.system_prune')}
 											position="left"
 											onConfirm={() => pruneSystem(env.id)}
 											onOpenChange={(open) => confirmPruneEnvId = open ? env.id : null}
@@ -582,7 +583,7 @@
 													size="sm"
 													class="h-7 px-2"
 													disabled={pruneStatus[env.id] === 'pruning'}
-													title="Prune system"
+													title={$_('settings.environments.prune_system')}
 												>
 													{#if pruneStatus[env.id] === 'pruning'}
 														<RefreshCw class="w-3.5 h-3.5 animate-spin" />
@@ -600,10 +601,10 @@
 									{#if $canAccess('environments', 'delete')}
 										<ConfirmPopover
 											open={confirmDeleteEnvId === env.id}
-											action="Delete"
-											itemType="environment"
+											action={$_('common.delete')}
+											itemType={$_('settings.environments.environment')}
 											itemName={env.name}
-											title="Remove"
+											title={$_('common.remove')}
 											position="left"
 											onConfirm={() => deleteEnvironment(env.id)}
 											onOpenChange={(open) => confirmDeleteEnvId = open ? env.id : null}
@@ -613,7 +614,7 @@
 													variant="ghost"
 													size="sm"
 													class="h-7 px-2 {open ? 'text-destructive' : 'text-muted-foreground hover:text-destructive'}"
-													title="Delete environment"
+													title={$_('settings.environments.delete')}
 												>
 													<Trash2 class="w-3.5 h-3.5" />
 												</Button>

@@ -18,11 +18,43 @@
 	import { themeStore, applyTheme } from '$lib/stores/theme';
 	import { gridPreferencesStore } from '$lib/stores/grid-preferences';
 	import { shouldShowWhatsNew } from '$lib/utils/version';
-	import { AlertTriangle, Search } from 'lucide-svelte';
+	import { AlertTriangle, Search, Languages } from 'lucide-svelte';
+	import { locale, _ } from '$lib/i18n';
+	import * as Select from '$lib/components/ui/select';
 
 	let { children } = $props();
 	let envId = $state<number | null>(null);
 	let commandPaletteOpen = $state(false);
+
+	// Language state
+	const LANGUAGE_STORAGE_KEY = 'dockhand-locale';
+	let currentLocale = $state<string>('zh');
+
+	// Initialize locale on mount
+	$effect(() => {
+		if (browser) {
+			const saved = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+			if (saved && (saved === 'en' || saved === 'zh')) {
+				currentLocale = saved;
+				locale.set(saved);
+			} else {
+				currentLocale = 'zh';
+				locale.set('zh');
+			}
+		}
+	});
+
+	// Handle locale change
+	function handleLocaleChange(value: string | string[]) {
+		const next = Array.isArray(value) ? value[0] : value;
+		if (next === 'en' || next === 'zh') {
+			currentLocale = next;
+			locale.set(next);
+			if (browser) {
+				localStorage.setItem(LANGUAGE_STORAGE_KEY, next);
+			}
+		}
+	}
 
 	// What's New modal state
 	let showWhatsNewModal = $state(false);
@@ -106,7 +138,7 @@
 
 <svelte:head>
 	<link rel="icon" href="/logo_light.webp" />
-	<title>Dockhand - Docker Management</title>
+	<title>{$_('app.title')}</title>
 </svelte:head>
 
 <SidebarProvider>
@@ -124,12 +156,12 @@
 					class="flex items-center gap-2 px-2.5 py-1.5 text-xs text-muted-foreground hover:text-foreground border rounded-md hover:bg-muted/50 transition-colors"
 				>
 					<Search class="w-3.5 h-3.5" />
-					<span class="hidden sm:inline">Search...</span>
+					<span class="hidden sm:inline">{$_('common.search_ellipsis')}</span>
 					<kbd class="pointer-events-none hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-2xs font-medium text-muted-foreground">
 						{#if isMac}
 							<span class="text-xs">⌘</span>
 						{:else}
-							<span class="text-xs">Ctrl</span>
+							<span class="text-xs">{$_('common.ctrl')}</span>
 						{/if}
 						K
 					</kbd>
@@ -144,14 +176,31 @@
 					>
 						<AlertTriangle class="w-3.5 h-3.5" />
 						{#if $daysUntilExpiry <= 0}
-							License expired
+							{$_('license.expired')}
 						{:else if $daysUntilExpiry === 1}
-							License expires tomorrow
+							{$_('license.expires_tomorrow')}
 						{:else}
-							License expires in {$daysUntilExpiry} days
+							{$_('license.expires_in_days', { values: { count: $daysUntilExpiry } })}
 						{/if}
 					</a>
 				{/if}
+				<!-- Language Switcher -->
+				<Select.Root
+					type="single"
+					value={currentLocale}
+					onValueChange={(value) => handleLocaleChange(value)}
+				>
+					<Select.Trigger
+						class="w-[100px] h-8 px-2 text-xs border rounded-md hover:bg-muted/50 transition-colors"
+					>
+						<Languages class="w-3.5 h-3.5 mr-1" />
+						<Select.Value />
+					</Select.Trigger>
+					<Select.Content>
+						<Select.Item value="zh">{$_('language.chinese')}</Select.Item>
+						<Select.Item value="en">{$_('language.english')}</Select.Item>
+					</Select.Content>
+				</Select.Root>
 				<ThemeToggle />
 			</div>
 		</header>

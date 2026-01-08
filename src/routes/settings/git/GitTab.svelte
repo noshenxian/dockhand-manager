@@ -3,6 +3,7 @@
 	import { FolderGit2, Key } from 'lucide-svelte';
 	import GitCredentialsTab from './GitCredentialsTab.svelte';
 	import GitRepositoriesTab from './GitRepositoriesTab.svelte';
+	import { _ } from '$lib/i18n';
 
 	let gitSubTab = $derived<'repositories' | 'credentials'>(
 		($page.url.searchParams.get('subtab') as 'repositories' | 'credentials') || 'repositories'
@@ -17,14 +18,14 @@
 			class="px-3 py-1.5 text-sm font-medium rounded-md transition-all flex items-center gap-1.5 {gitSubTab === 'repositories' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}"
 		>
 			<FolderGit2 class="w-4 h-4" />
-			Repositories
+			{$_('settings.git_tab.repositories')}
 		</a>
 		<a
 			href="/settings?tab=git&subtab=credentials"
 			class="px-3 py-1.5 text-sm font-medium rounded-md transition-all flex items-center gap-1.5 {gitSubTab === 'credentials' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}"
 		>
 			<Key class="w-4 h-4" />
-			Credentials
+			{$_('settings.git_tab.credentials')}
 		</a>
 	</div>
 

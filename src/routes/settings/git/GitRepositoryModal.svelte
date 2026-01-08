@@ -7,6 +7,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Loader2, GitBranch, KeyRound, Lock, Key, Globe, Play, CheckCircle2 } from 'lucide-svelte';
 	import { focusFirstInput } from '$lib/utils';
+	import { _, locale } from '$lib/i18n';
 
 	interface GitCredential {
 		id: number;
@@ -56,10 +57,11 @@
 	}
 
 	function getAuthLabel(type: string) {
+		const currentLocale = $locale;
 		switch (type) {
-			case 'ssh': return 'SSH Key';
-			case 'password': return 'Password';
-			default: return 'None';
+			case 'ssh': return $_('settings.git.credentials.auth_ssh');
+			case 'password': return $_('settings.git.credentials.auth_password');
+			default: return $_('settings.git.credentials.auth_none');
 		}
 	}
 
@@ -97,7 +99,7 @@
 
 	async function testRepository() {
 		if (!formUrl.trim()) {
-			formErrors.url = 'Repository URL is required to test';
+			formErrors.url = $_('settings.git.repositories.url_required_test');
 			return;
 		}
 
@@ -119,13 +121,15 @@
 			testResult = data;
 
 			if (data.success) {
-				toast.success(`Connection successful! Branch: ${data.branch}, Commit: ${data.lastCommit}`);
+				toast.success($_('settings.git.repositories.test_success_detail', {
+					values: { branch: data.branch, commit: data.lastCommit }
+				}));
 			} else {
-				toast.error(data.error || 'Connection test failed');
+				toast.error(data.error || $_('settings.git.repositories.test_failed'));
 			}
 		} catch (error) {
-			testResult = { success: false, error: 'Failed to test connection' };
-			toast.error('Failed to test connection');
+			testResult = { success: false, error: $_('settings.git.repositories.test_failed') };
+			toast.error($_('settings.git.repositories.test_failed'));
 		} finally {
 			testing = false;
 		}
@@ -135,11 +139,11 @@
 		formErrors = {};
 
 		if (!formName.trim()) {
-			formErrors.name = 'Name is required';
+			formErrors.name = $_('settings.git.repositories.name_required');
 		}
 
 		if (!formUrl.trim()) {
-			formErrors.url = 'Repository URL is required';
+			formErrors.url = $_('settings.git.repositories.url_required');
 		}
 
 		if (formErrors.name || formErrors.url) {
@@ -172,21 +176,21 @@
 
 			if (!response.ok) {
 				if (data.error?.includes('already exists')) {
-					formErrors.name = 'Repository name already exists';
+					formErrors.name = $_('settings.git.repositories.name_exists');
 				} else {
-					formError = data.error || 'Failed to save repository';
+					formError = data.error || $_('settings.git.repositories.save_failed');
 				}
-				toast.error(formError || 'Failed to save repository');
+				toast.error(formError || $_('settings.git.repositories.save_failed'));
 				return;
 			}
 
 			const wasEditing = repository !== null;
 			onSaved();
 			onClose();
-			toast.success(wasEditing ? 'Repository updated' : 'Repository added');
+			toast.success(wasEditing ? $_('settings.git.repositories.update_success') : $_('settings.git.repositories.add_success'));
 		} catch (error) {
-			formError = 'Failed to save repository';
-			toast.error('Failed to save repository');
+			formError = $_('settings.git.repositories.save_failed');
+			toast.error($_('settings.git.repositories.save_failed'));
 		} finally {
 			formSaving = false;
 		}
@@ -199,36 +203,36 @@
 		<Dialog.Header>
 			<Dialog.Title class="flex items-center gap-2">
 				<GitBranch class="w-5 h-5" />
-				{isEditing ? 'Edit' : 'Add'} Git repository
+				{isEditing ? $_('settings.git.repositories.edit_title') : $_('settings.git.repositories.add_title')}
 			</Dialog.Title>
 			<Dialog.Description>
-				{isEditing ? 'Update repository settings' : 'Add a Git repository that can be used to deploy stacks'}
+				{isEditing ? $_('settings.git.repositories.edit_desc') : $_('settings.git.repositories.add_desc')}
 			</Dialog.Description>
 		</Dialog.Header>
 
 		<form onsubmit={(e) => { e.preventDefault(); saveRepository(); }} class="space-y-4">
 			<div class="space-y-2">
-				<Label for="repo-name">Name</Label>
+				<Label for="repo-name">{$_('common.name')}</Label>
 				<Input
 					id="repo-name"
 					bind:value={formName}
-					placeholder="e.g., my-app-repo"
+					placeholder={$_('settings.git.repositories.placeholder_name')}
 					class={formErrors.name ? 'border-destructive focus-visible:ring-destructive' : ''}
 					oninput={() => formErrors.name = undefined}
 				/>
 				{#if formErrors.name}
 					<p class="text-xs text-destructive">{formErrors.name}</p>
 				{:else if !isEditing}
-					<p class="text-xs text-muted-foreground">A friendly name to identify this repository</p>
+					<p class="text-xs text-muted-foreground">{$_('settings.git.repositories.name_hint')}</p>
 				{/if}
 			</div>
 
 			<div class="space-y-2">
-				<Label for="repo-url">Repository URL</Label>
+				<Label for="repo-url">{$_('settings.git.repositories.url')}</Label>
 				<Input
 					id="repo-url"
 					bind:value={formUrl}
-					placeholder="https://github.com/user/repo.git or git@github.com:user/repo.git"
+					placeholder={$_('settings.git.repositories.placeholder_url')}
 					class={formErrors.url ? 'border-destructive focus-visible:ring-destructive' : ''}
 					oninput={() => { formErrors.url = undefined; testResult = null; }}
 				/>
@@ -238,12 +242,12 @@
 			</div>
 
 			<div class="space-y-2">
-				<Label for="repo-branch">Branch</Label>
-				<Input id="repo-branch" bind:value={formBranch} placeholder="main" oninput={() => testResult = null} />
+				<Label for="repo-branch">{$_('settings.git.repositories.branch')}</Label>
+				<Input id="repo-branch" bind:value={formBranch} placeholder={$_('settings.git.repositories.placeholder_branch')} oninput={() => testResult = null} />
 			</div>
 
 			<div class="space-y-2">
-				<Label for="repo-credential">Credential (optional)</Label>
+				<Label for="repo-credential">{$_('settings.git.repositories.credential_optional')}</Label>
 				<Select.Root
 					type="single"
 					value={formCredentialId?.toString() ?? 'none'}
@@ -260,7 +264,7 @@
 						{:else}
 							<span class="flex items-center gap-2">
 								<Globe class="w-4 h-4 text-muted-foreground" />
-								None (public repository)
+								{$_('settings.git.repositories.none_public')}
 							</span>
 						{/if}
 					</Select.Trigger>
@@ -268,7 +272,7 @@
 						<Select.Item value="none">
 							<span class="flex items-center gap-2">
 								<Globe class="w-4 h-4 text-muted-foreground" />
-								None (public repository)
+								{$_('settings.git.repositories.none_public')}
 							</span>
 						</Select.Item>
 						{#each credentials as cred}
@@ -289,7 +293,7 @@
 				</Select.Root>
 				{#if credentials.length === 0 && !isEditing}
 					<p class="text-xs text-muted-foreground">
-						<a href="/settings?tab=git&subtab=credentials" class="text-primary hover:underline">Add credentials</a> for private repositories
+						<a href="/settings?tab=git&subtab=credentials" class="text-primary hover:underline">{$_('settings.git.repositories.add_credentials')}</a> {$_('settings.git.repositories.add_credentials_suffix')}
 					</p>
 				{/if}
 			</div>
@@ -299,7 +303,7 @@
 			{/if}
 
 			<Dialog.Footer>
-				<Button variant="outline" type="button" onclick={onClose}>Cancel</Button>
+				<Button variant="outline" type="button" onclick={onClose}>{$_('common.cancel')}</Button>
 				<Button
 					type="button"
 					variant="outline"
@@ -314,14 +318,14 @@
 					{:else}
 						<Play class="w-4 h-4 mr-1.5" />
 					{/if}
-					Test
+					{$_('settings.git.repositories.test')}
 				</Button>
 				<Button type="submit" disabled={formSaving}>
 					{#if formSaving}
 						<Loader2 class="w-4 h-4 mr-1 animate-spin" />
-						Saving...
+						{$_('settings.git.repositories.saving')}
 					{:else}
-						{isEditing ? 'Save changes' : 'Add repository'}
+						{isEditing ? $_('settings.git.repositories.save_changes') : $_('settings.git.repositories.add')}
 					{/if}
 				</Button>
 			</Dialog.Footer>

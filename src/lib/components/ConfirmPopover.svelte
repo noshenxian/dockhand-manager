@@ -3,6 +3,7 @@
 	import * as Popover from '$lib/components/ui/popover';
 	import type { Snippet } from 'svelte';
 	import { appSettings } from '$lib/stores/settings';
+	import { _ } from '$lib/i18n';
 
 	interface Props {
 		open: boolean;
@@ -26,7 +27,7 @@
 		action,
 		itemName = '',
 		itemType,
-		confirmText = 'Confirm',
+		confirmText = '',
 		variant = 'destructive',
 		autoHideMs = 3000,
 		title = '',
@@ -42,6 +43,7 @@
 		? 'inline-flex items-center cursor-pointer'
 		: 'p-1 rounded hover:bg-muted transition-colors opacity-70 hover:opacity-100 cursor-pointer inline-flex items-center'
 	);
+	const resolvedConfirmText = $derived(confirmText || $_('common.confirm'));
 
 	// Get the confirmDestructive setting from the store
 	const confirmDestructive = $derived($appSettings.confirmDestructive);
@@ -106,7 +108,7 @@
 		<div class="flex items-center gap-2">
 			<span class="text-xs whitespace-nowrap">{action} {itemType} {#if displayName}<strong>{displayName}</strong>{/if}?</span>
 			<Button size="sm" {variant} class="h-6 px-2 text-xs" onclick={handleConfirm}>
-				{confirmText}
+				{resolvedConfirmText}
 			</Button>
 		</div>
 	</Popover.Content>
