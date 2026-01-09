@@ -10,6 +10,7 @@
 	import { canAccess } from '$lib/stores/auth';
 	import ConfigSetModal from './ConfigSetModal.svelte';
 	import { EmptyState } from '$lib/components/ui/empty-state';
+	import { _ } from '$lib/i18n';
 
 	// Config set types
 	interface ConfigSet {
@@ -32,6 +33,33 @@
 	let showCfgModal = $state(false);
 	let editingCfg = $state<ConfigSet | null>(null);
 	let confirmDeleteConfigSetId = $state<number | null>(null);
+	function getNetworkLabel(mode: string): string {
+		switch (mode) {
+			case 'bridge':
+				return $_('settings.config_sets_page.network_bridge');
+			case 'host':
+				return $_('settings.config_sets_page.network_host');
+			case 'none':
+				return $_('settings.config_sets_page.network_none');
+			default:
+				return mode;
+		}
+	}
+
+	function getRestartLabel(policy: string): string {
+		switch (policy) {
+			case 'no':
+				return $_('settings.config_sets_page.restart_no');
+			case 'always':
+				return $_('settings.config_sets_page.restart_always');
+			case 'on-failure':
+				return $_('settings.config_sets_page.restart_on_failure');
+			case 'unless-stopped':
+				return $_('settings.config_sets_page.restart_unless_stopped');
+			default:
+				return policy;
+		}
+	}
 
 	async function fetchConfigSets() {
 		cfgLoading = true;
@@ -40,7 +68,7 @@
 			configSets = await response.json();
 		} catch (error) {
 			console.error('Failed to fetch config sets:', error);
-			toast.error('Failed to fetch config sets');
+			toast.error($_('settings.config_sets_page.fetch_failed'));
 		} finally {
 			cfgLoading = false;
 		}
@@ -59,13 +87,13 @@
 
 			if (response.ok) {
 				await fetchConfigSets();
-				toast.success('Config set deleted');
+				toast.success($_('settings.config_sets_page.delete_success'));
 			} else {
 				const data = await response.json();
-				toast.error(data.error || 'Failed to delete config set');
+				toast.error(data.error || $_('settings.config_sets_page.delete_failed'));
 			}
 		} catch (error) {
-			toast.error('Failed to delete config set');
+			toast.error($_('settings.config_sets_page.delete_failed'));
 		}
 	}
 
@@ -80,9 +108,9 @@
 			<div class="flex items-start gap-3">
 				<Layers class="w-5 h-5 text-muted-foreground mt-0.5" />
 				<div>
-					<p class="text-sm font-medium">What are config sets?</p>
+					<p class="text-sm font-medium">{$_('settings.config_sets_page.title')}</p>
 					<p class="text-xs text-muted-foreground mt-1">
-						Config sets are reusable templates for container configuration. Define common environment variables, labels, ports, and volumes once, then apply them when creating or editing containers. Values from config sets can be overwritten during container creation.
+						{$_('settings.config_sets_page.description')}
 					</p>
 				</div>
 			</div>
@@ -91,26 +119,26 @@
 
 	<div class="flex justify-between items-center">
 		<div class="flex items-center gap-3">
-			<Badge variant="secondary" class="text-xs">{configSets.length} total</Badge>
+			<Badge variant="secondary" class="text-xs">{$_('settings.config_sets_page.total', { values: { count: configSets.length } })}</Badge>
 		</div>
 		<div class="flex gap-2">
 			{#if $canAccess('configsets', 'create')}
 				<Button size="sm" onclick={() => openCfgModal()}>
 					<Plus class="w-4 h-4 mr-1" />
-					Add config set
+					{$_('settings.config_sets_page.add')}
 				</Button>
 			{/if}
-			<Button size="sm" variant="outline" onclick={fetchConfigSets}>Refresh</Button>
+			<Button size="sm" variant="outline" onclick={fetchConfigSets}>{$_('common.refresh')}</Button>
 		</div>
 	</div>
 
 	{#if cfgLoading && configSets.length === 0}
-		<p class="text-muted-foreground text-sm">Loading config sets...</p>
+		<p class="text-muted-foreground text-sm">{$_('settings.config_sets_page.loading')}</p>
 	{:else if configSets.length === 0}
 		<EmptyState
 			icon={Layers}
-			title="No config sets found"
-			description="Create a reusable config set to get started"
+			title={$_('settings.config_sets_page.empty_title')}
+			description={$_('settings.config_sets_page.empty_desc')}
 		/>
 	{:else}
 		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -132,23 +160,23 @@
 
 						<div class="flex flex-wrap gap-1.5">
 							{#if cfg.envVars && cfg.envVars.length > 0}
-								<Badge variant="outline" class="text-xs">{cfg.envVars.length} env vars</Badge>
+								<Badge variant="outline" class="text-xs">{$_('settings.config_sets_page.env_vars_count', { values: { count: cfg.envVars.length } })}</Badge>
 							{/if}
 							{#if cfg.labels && cfg.labels.length > 0}
-								<Badge variant="outline" class="text-xs">{cfg.labels.length} labels</Badge>
+								<Badge variant="outline" class="text-xs">{$_('settings.config_sets_page.labels_count', { values: { count: cfg.labels.length } })}</Badge>
 							{/if}
 							{#if cfg.ports && cfg.ports.length > 0}
-								<Badge variant="outline" class="text-xs">{cfg.ports.length} ports</Badge>
+								<Badge variant="outline" class="text-xs">{$_('settings.config_sets_page.ports_count', { values: { count: cfg.ports.length } })}</Badge>
 							{/if}
 							{#if cfg.volumes && cfg.volumes.length > 0}
-								<Badge variant="outline" class="text-xs">{cfg.volumes.length} volumes</Badge>
+								<Badge variant="outline" class="text-xs">{$_('settings.config_sets_page.volumes_count', { values: { count: cfg.volumes.length } })}</Badge>
 							{/if}
 						</div>
 
 						<div class="text-xs text-muted-foreground">
-							<span>Network: {cfg.networkMode}</span>
+							<span>{$_('settings.config_sets_page.network_label')}: {getNetworkLabel(cfg.networkMode)}</span>
 							<span class="mx-1">|</span>
-							<span>Restart: {cfg.restartPolicy}</span>
+							<span>{$_('settings.config_sets_page.restart_label')}: {getRestartLabel(cfg.restartPolicy)}</span>
 						</div>
 
 						<div class="flex gap-2 pt-2">
@@ -159,16 +187,16 @@
 									onclick={() => openCfgModal(cfg)}
 								>
 									<Pencil class="w-3 h-3 mr-1" />
-									Edit
+									{$_('common.edit')}
 								</Button>
 							{/if}
 							{#if $canAccess('configsets', 'delete')}
 								<ConfirmPopover
 									open={confirmDeleteConfigSetId === cfg.id}
-									action="Delete"
-									itemType="config set"
+									action={$_('common.delete')}
+									itemType={$_('settings.config_sets_page.config_set')}
 									itemName={cfg.name}
-									title="Remove"
+									title={$_('common.remove')}
 									position="left"
 									onConfirm={() => deleteConfigSet(cfg.id)}
 									onOpenChange={(open) => confirmDeleteConfigSetId = open ? cfg.id : null}
