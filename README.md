@@ -3,50 +3,52 @@
 </p>
 
 <p align="center">
-  <strong>Modern Docker Management UI</strong>
+  <strong>现代化 Docker 管理界面</strong>
 </p>
 
 <p align="center">
-  <a href="https://dockhand.pro">Website</a> •
-  <a href="https://dockhand.pro/manual">Documentation</a> •
-  <a href="#license">License</a>
+  <a href="https://dockhand.pro">官网</a> •
+  <a href="https://dockhand.pro/manual">文档</a> •
+  <a href="#license">许可证</a>
 </p>
 
 ---
 
-## About
+## 关于
 
-Dockhand is a modern, efficient Docker management application providing real-time container management, Compose stack orchestration, and multi-environment support.  All in a lightweight, secure and privacy-focused package.
+Dockhand 是一款现代、高效的 Docker 管理应用，提供容器实时管理、Compose 栈编排与多环境支持，同时保持轻量、安全与隐私友好。
 
-### Features
+> 说明：本 README 基于上游 Dockhand 项目的英文内容翻译与整理，版权与署名归原作者所有。原始信息与链接请以官方来源为准。
 
-- **Container Management**: Start, stop, restart, and monitor containers in real-time
-- **Compose Stacks**: Visual editor for Docker Compose deployments
-- **Git Integration**: Deploy stacks from Git repositories with webhooks and auto-sync
-- **Multi-Environment**: Manage local and remote Docker hosts
-- **Terminal & Logs**: Interactive shell access and real-time log streaming
-- **File Browser**: Browse, upload, and download files from containers
-- **Authentication**: SSO via OIDC, local users, and optional RBAC (Enterprise)
+### 功能特性
 
-## Tech Stack
+- **容器管理**：实时启动、停止、重启与监控容器
+- **Compose 栈**：Docker Compose 的可视化编辑与部署
+- **Git 集成**：通过 Webhook 与自动同步从 Git 仓库部署
+- **多环境**：管理本地与远程 Docker 主机
+- **终端与日志**：交互式 Shell 与实时日志流
+- **文件浏览**：浏览、上传与下载容器内文件
+- **认证**：OIDC SSO、本地用户与可选 RBAC（企业版）
 
-- **Base**: own OS layer built from scratch using <a href="https://github.com/wolfi-dev/os">Wolfi packages</a> via apko. Every package is explicitly declared in the Dockerfile.
-- **Frontend**: SvelteKit 2, Svelte 5, shadcn-svelte, TailwindCSS
-- **Backend**: Bun runtime with SvelteKit API routes
-- **Database**: SQLite or PostgreSQL via Drizzle ORM
-- **Docker**: direct docker API calls.
+## 技术栈
 
-## License
+- **基础层**：通过 apko 使用 <a href="https://github.com/wolfi-dev/os">Wolfi packages</a> 从零构建 OS 层，Dockerfile 中显式声明每个包
+- **前端**：SvelteKit 2、Svelte 5、shadcn-svelte、TailwindCSS
+- **后端**：Bun 运行时 + SvelteKit API 路由
+- **数据库**：SQLite 或 PostgreSQL（Drizzle ORM）
+- **Docker**：直接调用 Docker API
 
-Dockhand is licensed under the [Business Source License 1.1](LICENSE.txt) (BSL 1.1).
+## 许可证
 
-### What this means:
+Dockhand 使用 [Business Source License 1.1](LICENSE.txt)（BSL 1.1）授权。
 
-- **Free for**: Personal use, internal business use, non-profits, education, evaluation
-- **Not allowed**: Offering Dockhand as a commercial SaaS/hosted service
-- **Converts to Apache 2.0**: On January 1, 2029
+### 许可要点
 
-See [LICENSE.txt](LICENSE.txt) for full terms.
+- **免费使用**：个人使用、企业内部使用、非营利组织、教育与评估
+- **不允许**：以商业 SaaS/托管服务形式提供 Dockhand
+- **自动转为 Apache 2.0**：2029 年 1 月 1 日
+
+完整条款见 [LICENSE.txt](LICENSE.txt)。
 
 
 <a href="https://buymeacoffee.com/dockhand" target="_blank">
@@ -56,10 +58,10 @@ See [LICENSE.txt](LICENSE.txt) for full terms.
 </a>
 
 
-## Links
+## 链接
 
-- **Website**: [https://dockhand.pro](https://dockhand.pro)
-- **Documentation**: [https://dockhand.pro/manual](https://dockhand.pro/manual)
+- **官网**：https://dockhand.pro
+- **文档**：https://dockhand.pro/manual
 
 ---
 
