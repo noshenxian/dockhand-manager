@@ -34,7 +34,7 @@
 			credentials = await response.json();
 		} catch (error) {
 			console.error('Failed to fetch git credentials:', error);
-			toast.error($_('settings.git.credentials.fetch_failed'));
+			toast.error($_('settings.git_section.credentials.fetch_failed'));
 		} finally {
 			loading = false;
 		}
@@ -59,24 +59,24 @@
 			const response = await fetch(`/api/git/credentials/${id}`, { method: 'DELETE' });
 			if (response.ok) {
 				await fetchCredentials();
-				toast.success($_('settings.git.credentials.delete_success'));
+				toast.success($_('settings.git_section.credentials.delete_success'));
 			} else {
-				toast.error($_('settings.git.credentials.delete_failed'));
+				toast.error($_('settings.git_section.credentials.delete_failed'));
 			}
 		} catch (error) {
 			console.error('Failed to delete credential:', error);
-			toast.error($_('settings.git.credentials.delete_failed'));
+			toast.error($_('settings.git_section.credentials.delete_failed'));
 		}
 	}
 
 	function getAuthTypeBadge(authType: string) {
 		switch (authType) {
 			case 'password':
-				return { label: $_('settings.git.credentials.auth_password'), class: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' };
+				return { label: $_('settings.git_section.credentials.auth_password'), class: 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' };
 			case 'ssh':
-				return { label: $_('settings.git.credentials.auth_ssh'), class: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' };
+				return { label: $_('settings.git_section.credentials.auth_ssh'), class: 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200' };
 			default:
-				return { label: $_('settings.git.credentials.auth_none'), class: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200' };
+				return { label: $_('settings.git_section.credentials.auth_none'), class: 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200' };
 		}
 	}
 
@@ -88,26 +88,26 @@
 <div class="space-y-4">
 	<div class="flex justify-between items-center">
 		<div>
-			<h3 class="text-lg font-medium">{$_('settings.git.credentials.title')}</h3>
-			<p class="text-sm text-muted-foreground">{$_('settings.git.credentials.description')}</p>
+			<h3 class="text-lg font-medium">{$_('settings.git_section.credentials.title')}</h3>
+			<p class="text-sm text-muted-foreground">{$_('settings.git_section.credentials.description')}</p>
 		</div>
 		{#if $canAccess('settings', 'edit')}
 			<Button size="sm" onclick={() => openModal()}>
 				<Plus class="w-4 h-4 mr-1" />
-				{$_('settings.git.credentials.add')}
+				{$_('settings.git_section.credentials.add')}
 			</Button>
 		{/if}
 	</div>
 
 	{#if loading}
-		<p class="text-sm text-muted-foreground">{$_('settings.git.credentials.loading')}</p>
+		<p class="text-sm text-muted-foreground">{$_('settings.git_section.credentials.loading')}</p>
 	{:else if credentials.length === 0}
 		<Card.Root>
 			<Card.Content>
 				<EmptyState
 					icon={Key}
-					title={$_('settings.git.credentials.empty_title')}
-					description={$_('settings.git.credentials.empty_desc')}
+					title={$_('settings.git_section.credentials.empty_title')}
+					description={$_('settings.git_section.credentials.empty_desc')}
 				/>
 			</Card.Content>
 		</Card.Root>
@@ -130,9 +130,9 @@
 								<div class="font-medium text-sm">{cred.name}</div>
 								<div class="text-xs text-muted-foreground">
 									{#if cred.username}
-										{$_('settings.git.credentials.username_label', { values: { username: cred.username } })}
+										{$_('settings.git_section.credentials.username_label', { values: { username: cred.username } })}
 									{:else}
-										{$_('settings.git.credentials.no_username')}
+										{$_('settings.git_section.credentials.no_username')}
 									{/if}
 								</div>
 							</div>
@@ -148,7 +148,7 @@
 								<ConfirmPopover
 									open={confirmDeleteId === cred.id}
 									action={$_('common.delete')}
-									itemType={$_('settings.git.credentials.credential')}
+									itemType={$_('settings.git_section.credentials.credential')}
 									itemName={cred.name}
 									title={$_('common.delete')}
 									onConfirm={() => deleteCredential(cred.id)}

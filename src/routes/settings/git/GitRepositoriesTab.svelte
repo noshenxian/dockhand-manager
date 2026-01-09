@@ -42,7 +42,7 @@
 			repositories = await response.json();
 		} catch (error) {
 			console.error('Failed to fetch git repositories:', error);
-			toast.error($_('settings.git.repositories.fetch_failed'));
+			toast.error($_('settings.git_section.repositories.fetch_failed'));
 		} finally {
 			loading = false;
 		}
@@ -54,7 +54,7 @@
 			credentials = await response.json();
 		} catch (error) {
 			console.error('Failed to fetch git credentials:', error);
-			toast.error($_('settings.git.credentials.fetch_failed'));
+			toast.error($_('settings.git_section.credentials.fetch_failed'));
 		}
 	}
 
@@ -77,13 +77,13 @@
 			const response = await fetch(`/api/git/repositories/${id}`, { method: 'DELETE' });
 			if (response.ok) {
 				await fetchRepositories();
-				toast.success($_('settings.git.repositories.delete_success'));
+				toast.success($_('settings.git_section.repositories.delete_success'));
 			} else {
-				toast.error($_('settings.git.repositories.delete_failed'));
+				toast.error($_('settings.git_section.repositories.delete_failed'));
 			}
 		} catch (error) {
 			console.error('Failed to delete repository:', error);
-			toast.error($_('settings.git.repositories.delete_failed'));
+			toast.error($_('settings.git_section.repositories.delete_failed'));
 		}
 	}
 
@@ -97,19 +97,19 @@
 				testResult = {
 					id,
 					success: true,
-					message: $_('settings.git.repositories.test_success_detail', {
+					message: $_('settings.git_section.repositories.test_success_detail', {
 						values: { branch: data.branch, commit: data.lastCommit }
 					})
 				};
-				toast.success($_('settings.git.repositories.test_success'));
+				toast.success($_('settings.git_section.repositories.test_success'));
 			} else {
 				testResult = {
 					id,
 					success: false,
-					message: data.error || $_('settings.git.repositories.connection_failed')
+					message: data.error || $_('settings.git_section.repositories.connection_failed')
 				};
-				toast.error($_('settings.git.repositories.connection_failed_detail', {
-					values: { error: data.error || $_('settings.git.unknown_error') }
+				toast.error($_('settings.git_section.repositories.connection_failed_detail', {
+					values: { error: data.error || $_('settings.git_section.unknown_error') }
 				}));
 			}
 			// Auto-clear after 5 seconds
@@ -122,9 +122,9 @@
 			testResult = {
 				id,
 				success: false,
-				message: $_('settings.git.repositories.test_failed')
+				message: $_('settings.git_section.repositories.test_failed')
 			};
-			toast.error($_('settings.git.repositories.test_failed'));
+			toast.error($_('settings.git_section.repositories.test_failed'));
 		} finally {
 			testingId = null;
 		}
@@ -139,26 +139,26 @@
 <div class="space-y-4">
 	<div class="flex justify-between items-center">
 		<div>
-			<h3 class="text-lg font-medium">{$_('settings.git.repositories.title')}</h3>
-			<p class="text-sm text-muted-foreground">{$_('settings.git.repositories.description')}</p>
+			<h3 class="text-lg font-medium">{$_('settings.git_section.repositories.title')}</h3>
+			<p class="text-sm text-muted-foreground">{$_('settings.git_section.repositories.description')}</p>
 		</div>
 		{#if $canAccess('settings', 'edit')}
 			<Button size="sm" onclick={() => openModal()}>
 				<Plus class="w-4 h-4 mr-1" />
-				{$_('settings.git.repositories.add')}
+				{$_('settings.git_section.repositories.add')}
 			</Button>
 		{/if}
 	</div>
 
 	{#if loading}
-		<p class="text-sm text-muted-foreground">{$_('settings.git.repositories.loading')}</p>
+		<p class="text-sm text-muted-foreground">{$_('settings.git_section.repositories.loading')}</p>
 	{:else if repositories.length === 0}
 		<Card.Root>
 			<Card.Content>
 				<EmptyState
 					icon={FolderGit2}
-					title={$_('settings.git.repositories.empty_title')}
-					description={$_('settings.git.repositories.empty_desc')}
+					title={$_('settings.git_section.repositories.empty_title')}
+					description={$_('settings.git_section.repositories.empty_desc')}
 				/>
 			</Card.Content>
 		</Card.Root>
@@ -187,14 +187,14 @@
 							</span>
 						{/if}
 						{#if repo.credentialName}
-							<span class="flex items-center gap-1 text-xs text-muted-foreground" title={$_('settings.git.repositories.using_credential', { values: { name: repo.credentialName } })}>
+							<span class="flex items-center gap-1 text-xs text-muted-foreground" title={$_('settings.git_section.repositories.using_credential', { values: { name: repo.credentialName } })}>
 								<Lock class="w-3 h-3" />
 								<span class="hidden sm:inline">{repo.credentialName}</span>
 							</span>
 						{:else}
-							<span class="flex items-center gap-1 text-xs text-muted-foreground" title={$_('settings.git.repositories.public_repo')}>
+							<span class="flex items-center gap-1 text-xs text-muted-foreground" title={$_('settings.git_section.repositories.public_repo')}>
 								<Globe class="w-3 h-3" />
-								<span class="hidden sm:inline">{$_('settings.git.repositories.public')}</span>
+								<span class="hidden sm:inline">{$_('settings.git_section.repositories.public')}</span>
 							</span>
 						{/if}
 						<Badge variant="outline" class="text-xs flex items-center gap-1">
@@ -207,7 +207,7 @@
 							class="h-7 w-7"
 							onclick={() => testRepository(repo.id)}
 							disabled={testingId === repo.id}
-							title={$_('settings.git.repositories.test_connection')}
+							title={$_('settings.git_section.repositories.test_connection')}
 						>
 							{#if testingId === repo.id}
 								<Loader2 class="w-3.5 h-3.5 animate-spin" />
@@ -216,13 +216,13 @@
 							{/if}
 						</Button>
 						{#if $canAccess('settings', 'edit')}
-							<Button variant="ghost" size="icon" class="h-7 w-7" onclick={() => openModal(repo)} title={$_('settings.git.repositories.edit')}>
+							<Button variant="ghost" size="icon" class="h-7 w-7" onclick={() => openModal(repo)} title={$_('settings.git_section.repositories.edit')}>
 								<Pencil class="w-3.5 h-3.5" />
 							</Button>
 							<ConfirmPopover
 								open={confirmDeleteId === repo.id}
 								action={$_('common.delete')}
-								itemType={$_('settings.git.repositories.repository')}
+								itemType={$_('settings.git_section.repositories.repository')}
 								itemName={repo.name}
 								title={$_('common.delete')}
 								onConfirm={() => deleteRepository(repo.id)}

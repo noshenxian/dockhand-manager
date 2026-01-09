@@ -13,8 +13,8 @@
 	const authTypeOptions = $derived.by(() => {
 		const currentLocale = $locale;
 		return [
-			{ value: 'password', label: $_('settings.git.credentials.auth_password_token'), icon: Lock },
-			{ value: 'ssh', label: $_('settings.git.credentials.auth_ssh'), icon: KeyRound }
+			{ value: 'password', label: $_('settings.git_section.credentials.auth_password_token'), icon: Lock },
+			{ value: 'ssh', label: $_('settings.git_section.credentials.auth_ssh'), icon: KeyRound }
 		];
 	});
 
@@ -89,17 +89,17 @@
 		let hasErrors = false;
 
 		if (!formName.trim()) {
-			errors.name = $_('settings.git.credentials.name_required');
+			errors.name = $_('settings.git_section.credentials.name_required');
 			hasErrors = true;
 		}
 
 		if (formAuthType === 'password' && !formPassword.trim() && !credential?.hasPassword) {
-			errors.password = $_('settings.git.credentials.password_required');
+			errors.password = $_('settings.git_section.credentials.password_required');
 			hasErrors = true;
 		}
 
 		if (formAuthType === 'ssh' && !formSshKey.trim() && !credential?.hasSshKey) {
-			errors.sshKey = $_('settings.git.credentials.ssh_required');
+			errors.sshKey = $_('settings.git_section.credentials.ssh_required');
 			hasErrors = true;
 		}
 
@@ -138,17 +138,17 @@
 			const data = await response.json();
 
 			if (!response.ok) {
-				formError = data.error || $_('settings.git.credentials.save_failed');
+				formError = data.error || $_('settings.git_section.credentials.save_failed');
 				toast.error(formError);
 				return;
 			}
 
 			onSaved();
 			onClose();
-			toast.success(credential ? $_('settings.git.credentials.update_success') : $_('settings.git.credentials.create_success'));
+			toast.success(credential ? $_('settings.git_section.credentials.update_success') : $_('settings.git_section.credentials.create_success'));
 		} catch (error) {
-			formError = $_('settings.git.credentials.save_failed');
-			toast.error($_('settings.git.credentials.save_failed'));
+			formError = $_('settings.git_section.credentials.save_failed');
+			toast.error($_('settings.git_section.credentials.save_failed'));
 		} finally {
 			formSaving = false;
 		}
@@ -161,10 +161,10 @@
 		<Dialog.Header>
 			<Dialog.Title class="flex items-center gap-2">
 				<Key class="w-5 h-5" />
-				{isEditing ? $_('settings.git.credentials.edit_title') : $_('settings.git.credentials.add_title')}
+				{isEditing ? $_('settings.git_section.credentials.edit_title') : $_('settings.git_section.credentials.add_title')}
 			</Dialog.Title>
 			<Dialog.Description>
-				{isEditing ? $_('settings.git.credentials.edit_desc') : $_('settings.git.credentials.add_desc')}
+				{isEditing ? $_('settings.git_section.credentials.edit_desc') : $_('settings.git_section.credentials.add_desc')}
 			</Dialog.Description>
 		</Dialog.Header>
 
@@ -174,19 +174,19 @@
 				<Input
 					id="cred-name"
 					bind:value={formName}
-					placeholder={$_('settings.git.credentials.placeholder_name')}
+					placeholder={$_('settings.git_section.credentials.placeholder_name')}
 					class={errors.name ? 'border-destructive focus-visible:ring-destructive' : ''}
 					oninput={() => errors.name = undefined}
 				/>
 				{#if errors.name}
 					<p class="text-xs text-destructive">{errors.name}</p>
 				{:else if !isEditing}
-					<p class="text-xs text-muted-foreground">{$_('settings.git.credentials.name_hint')}</p>
+					<p class="text-xs text-muted-foreground">{$_('settings.git_section.credentials.name_hint')}</p>
 				{/if}
 			</div>
 
 			<div class="space-y-2">
-				<Label>{$_('settings.git.credentials.auth_type')}</Label>
+				<Label>{$_('settings.git_section.credentials.auth_type')}</Label>
 				<ToggleGroup
 					value={formAuthType}
 					options={authTypeOptions}
@@ -199,43 +199,43 @@
 				{#if formAuthType === 'password'}
 					<div class="space-y-2">
 						<Label for="cred-username">{$_('common.username')}</Label>
-						<Input id="cred-username" bind:value={formUsername} placeholder={$_('settings.git.credentials.placeholder_username')} />
+						<Input id="cred-username" bind:value={formUsername} placeholder={$_('settings.git_section.credentials.placeholder_username')} />
 					</div>
 					<div class="space-y-2">
-						<Label for="cred-password">{$_('settings.git.credentials.password_or_token')}</Label>
+						<Label for="cred-password">{$_('settings.git_section.credentials.password_or_token')}</Label>
 						<Input
 							id="cred-password"
 							type="password"
 							bind:value={formPassword}
-							placeholder={isEditing ? $_('settings.git.credentials.password_keep') : $_('settings.git.credentials.password_placeholder')}
+							placeholder={isEditing ? $_('settings.git_section.credentials.password_keep') : $_('settings.git_section.credentials.password_placeholder')}
 							class={errors.password ? 'border-destructive focus-visible:ring-destructive' : ''}
 							oninput={() => errors.password = undefined}
 						/>
 						{#if errors.password}
 							<p class="text-xs text-destructive">{errors.password}</p>
 						{:else if isEditing && credential?.hasPassword}
-							<p class="text-xs text-muted-foreground">{$_('settings.git.credentials.password_hint')}</p>
+							<p class="text-xs text-muted-foreground">{$_('settings.git_section.credentials.password_hint')}</p>
 						{/if}
 					</div>
 				{:else if formAuthType === 'ssh'}
 					<div class="space-y-2">
-						<Label for="cred-ssh-key">{$_('settings.git.credentials.ssh_key')}</Label>
+						<Label for="cred-ssh-key">{$_('settings.git_section.credentials.ssh_key')}</Label>
 						<textarea
 							id="cred-ssh-key"
 							bind:value={formSshKey}
 							class="w-full h-32 px-3 py-2 text-sm border rounded-md font-mono bg-background {errors.sshKey ? 'border-destructive focus-visible:ring-destructive' : ''}"
-							placeholder={$_('settings.git.credentials.ssh_placeholder')}
+							placeholder={$_('settings.git_section.credentials.ssh_placeholder')}
 							oninput={() => errors.sshKey = undefined}
 						></textarea>
 						{#if errors.sshKey}
 							<p class="text-xs text-destructive">{errors.sshKey}</p>
 						{:else if isEditing && credential?.hasSshKey}
-							<p class="text-xs text-muted-foreground">{$_('settings.git.credentials.ssh_hint')}</p>
+							<p class="text-xs text-muted-foreground">{$_('settings.git_section.credentials.ssh_hint')}</p>
 						{/if}
 					</div>
 					<div class="space-y-2">
-						<Label for="cred-ssh-passphrase">{$_('settings.git.credentials.ssh_passphrase')}</Label>
-						<Input id="cred-ssh-passphrase" type="password" bind:value={formSshPassphrase} placeholder={$_('settings.git.credentials.ssh_passphrase_placeholder')} />
+						<Label for="cred-ssh-passphrase">{$_('settings.git_section.credentials.ssh_passphrase')}</Label>
+						<Input id="cred-ssh-passphrase" type="password" bind:value={formSshPassphrase} placeholder={$_('settings.git_section.credentials.ssh_passphrase_placeholder')} />
 					</div>
 				{/if}
 			</div>
@@ -247,7 +247,7 @@
 			<Dialog.Footer>
 				<Button variant="outline" type="button" onclick={onClose}>{$_('common.cancel')}</Button>
 				<Button type="submit" disabled={formSaving}>
-					{formSaving ? $_('settings.git.credentials.saving') : (isEditing ? $_('settings.git.credentials.save_changes') : $_('settings.git.credentials.add'))}
+					{formSaving ? $_('settings.git_section.credentials.saving') : (isEditing ? $_('settings.git_section.credentials.save_changes') : $_('settings.git_section.credentials.add'))}
 				</Button>
 			</Dialog.Footer>
 		</form>

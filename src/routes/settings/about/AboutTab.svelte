@@ -10,6 +10,7 @@
 	import { browser } from '$app/environment';
 	import LicenseModal from './LicenseModal.svelte';
 	import PrivacyModal from './PrivacyModal.svelte';
+	import { _, locale } from '$lib/i18n';
 
 	interface Dependency {
 		name: string;
@@ -66,10 +67,10 @@
 	async function fetchDependencies() {
 		try {
 			const res = await fetch('/api/dependencies');
-			if (!res.ok) throw new Error('Failed to fetch dependencies');
+			if (!res.ok) throw new Error($_('settings.about_page.deps_fetch_failed'));
 			dependencies = await res.json();
 		} catch (e) {
-			depsError = e instanceof Error ? e.message : 'Unknown error';
+			depsError = e instanceof Error ? e.message : $_('common.unknown');
 		} finally {
 			loadingDeps = false;
 		}
@@ -78,19 +79,21 @@
 	async function fetchChangelog() {
 		try {
 			const res = await fetch('/api/changelog');
-			if (!res.ok) throw new Error('Failed to fetch changelog');
+			if (!res.ok) throw new Error($_('settings.about_page.changelog_fetch_failed'));
 			changelog = await res.json();
 		} catch (e) {
-			changelogError = e instanceof Error ? e.message : 'Unknown error';
+			changelogError = e instanceof Error ? e.message : $_('common.unknown');
 		} finally {
 			loadingChangelog = false;
 		}
 	}
 
 	function formatChangelogDate(dateStr: string): string {
+		const currentLocale = $locale;
+		const localeValue = currentLocale === 'zh' ? 'zh-CN' : 'en-US';
 		try {
 			const date = new Date(dateStr);
-			return date.toLocaleDateString('en-US', {
+			return date.toLocaleDateString(localeValue, {
 				year: 'numeric',
 				month: 'long',
 				day: 'numeric'
@@ -106,7 +109,7 @@
 	const BUILD_COMMIT = __BUILD_COMMIT__ ?? null;
 	const BUILD_BRANCH = __BUILD_BRANCH__ ?? null;
 
-	const TAGLINES = [
+	const TAGLINES_EN = [
 		"Simplify. Deploy. Smile.",
 		"Less typing. More shipping.",
 		"Taming containers so you don't have to wrestle whales.",
@@ -170,6 +173,17 @@
 		"Containers behave. Developers rejoice.",
 		"Finally, a tool that respects your time and your terminal."
 	];
+	const TAGLINES_ZH = [
+		"简化部署，舒心管理。",
+		"少敲命令，多点按钮。",
+		"容器有序，运维不累。",
+		"从混乱到从容，只差一个 Dockhand。",
+		"让 Docker 管理更像人话。"
+	];
+	const taglines = $derived.by(() => {
+		const currentLocale = $locale;
+		return currentLocale === 'zh' ? TAGLINES_ZH : TAGLINES_EN;
+	});
 
 	interface SystemInfo {
 		docker: {
@@ -268,10 +282,12 @@
 	}
 
 	function formatBuildDate(dateStr: string | null): string {
-		if (!dateStr) return 'Development';
+		const currentLocale = $locale;
+		const localeValue = currentLocale === 'zh' ? 'zh-CN' : 'en-US';
+		if (!dateStr) return $_('settings.about_page.build_development');
 		try {
 			const date = new Date(dateStr);
-			return date.toLocaleDateString('en-US', {
+			return date.toLocaleDateString(localeValue, {
 				year: 'numeric',
 				month: 'short',
 				day: 'numeric'
@@ -285,7 +301,7 @@
 		if (browser) {
 			const saved = localStorage.getItem('dockhand-tagline-index');
 			if (saved !== null) {
-				taglineIndex = parseInt(saved, 10) % TAGLINES.length;
+				taglineIndex = parseInt(saved, 10) % taglines.length;
 			}
 		}
 	}
@@ -295,6 +311,11 @@
 			localStorage.setItem('dockhand-tagline-index', String(taglineIndex));
 		}
 	}
+
+	$effect(() => {
+		const currentLocale = $locale;
+		taglineIndex = taglines.length > 0 ? taglineIndex % taglines.length : 0;
+	});
 
 	let jumpLevel = $state(0); // 0, 1, 2 for small, medium, big jump
 	let taglineAnimating = $state(false);
@@ -310,7 +331,7 @@
 		// Change tagline every 3 clicks (after the big jump)
 		if (totalClicks % 3 === 0) {
 			taglineAnimating = true;
-			taglineIndex = (taglineIndex + 1) % TAGLINES.length;
+			taglineIndex = (taglineIndex + 1) % taglines.length;
 			saveTaglineIndex();
 			setTimeout(() => {
 				taglineAnimating = false;
@@ -342,7 +363,7 @@
 				fetch('/api/system'),
 				fetch('/api/host')
 			]);
-			if (!systemRes.ok) throw new Error('Failed to fetch system info');
+			if (!systemRes.ok) throw new Error($_('settings.about_page.system_fetch_failed'));
 			systemInfo = await systemRes.json();
 
 			if (hostRes.ok) {
@@ -350,7 +371,7 @@
 				serverUptime = hostData.uptime;
 			}
 		} catch (e) {
-			error = e instanceof Error ? e.message : 'Unknown error';
+			error = e instanceof Error ? e.message : $_('common.unknown');
 		} finally {
 			loading = false;
 		}
@@ -413,14 +434,14 @@
 						<!-- Easter Egg Popup -->
 						{#if showEasterEgg}
 							<div class="easter-egg-popup">
-								Stop already, will you? Coming from r/selfhosted?
+								{$_('settings.about_page.easter_egg')}
 							</div>
 						{/if}
 					</div>
 
 					<!-- Version Badge -->
 					<div class="flex items-center gap-2">
-						<Badge variant="secondary" class="text-xs">Version {currentVersion}</Badge>
+						<Badge variant="secondary" class="text-xs">{$_('settings.about_page.version_label', { values: { version: currentVersion } })}</Badge>
 					</div>
 
 					<!-- Build & Uptime Info -->
@@ -440,14 +461,14 @@
 						{#if serverUptime !== null}
 							<div class="flex items-center gap-1">
 								<Clock class="w-3 h-3 shrink-0" />
-								<span class="tabular-nums">Uptime {formatUptime(serverUptime)}</span>
+								<span class="tabular-nums">{$_('settings.about_page.uptime_label', { values: { uptime: formatUptime(serverUptime) } })}</span>
 							</div>
 						{/if}
 					</div>
 
 					<!-- Description -->
 					<p class="text-sm text-muted-foreground tagline-text {taglineAnimating ? 'tagline-zoom' : ''}">
-						{TAGLINES[taglineIndex]}
+						{taglines[taglineIndex]}
 					</p>
 
 					<!-- Website Link -->
@@ -461,12 +482,12 @@
 		<!-- System Stats Card (Right) -->
 		<Card.Root class="w-full h-full">
 			<Card.Header class="pb-2">
-				<Card.Title class="text-sm font-medium">System information</Card.Title>
+				<Card.Title class="text-sm font-medium">{$_('settings.about_page.system_info')}</Card.Title>
 			</Card.Header>
 			<Card.Content>
 				{#if loading}
 					<div class="flex items-center justify-center py-6">
-						<div class="text-sm text-muted-foreground">Loading...</div>
+						<div class="text-sm text-muted-foreground">{$_('common.loading')}</div>
 					</div>
 				{:else if error}
 					<div class="flex items-center justify-center py-6">
@@ -479,17 +500,17 @@
 						<div class="space-y-1.5">
 							<div class="flex items-center gap-2 text-xs font-medium text-muted-foreground">
 								<Server class="w-3.5 h-3.5" />
-								Docker
+								{$_('settings.about_page.docker')}
 							</div>
 							<div class="text-sm pl-5 space-y-0.5">
 								<div class="flex items-center gap-2">
-									<span class="text-muted-foreground">Version</span>
+									<span class="text-muted-foreground">{$_('settings.about_page.version')}</span>
 									<span>{systemInfo.docker.version}</span>
 									<span class="text-muted-foreground/50">|</span>
-									<span class="text-muted-foreground">API</span>
+									<span class="text-muted-foreground">{$_('settings.about_page.api')}</span>
 									<span>{systemInfo.docker.apiVersion}</span>
 									<span class="text-muted-foreground/50">|</span>
-									<span class="text-muted-foreground">OS/Arch</span>
+									<span class="text-muted-foreground">{$_('settings.about_page.os_arch')}</span>
 									<span>{systemInfo.docker.os}/{systemInfo.docker.arch}</span>
 								</div>
 							</div>
@@ -499,23 +520,23 @@
 						<div class="space-y-1.5">
 							<div class="flex items-center gap-2 text-xs font-medium text-muted-foreground">
 								<Plug class="w-3.5 h-3.5" />
-								Connection
+								{$_('settings.about_page.connection')}
 							</div>
 							<div class="text-sm pl-5">
 								<div class="flex items-center gap-2 flex-wrap">
 									{#if systemInfo.docker.connection.type === 'socket'}
 										<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-violet-500/15 text-violet-600 dark:text-violet-400 shadow-sm ring-1 ring-violet-500/20">
-											Unix Socket
+											{$_('settings.about_page.connection_socket')}
 										</span>
 										<span class="text-xs font-mono text-muted-foreground">{systemInfo.docker.connection.socketPath}</span>
 									{:else if systemInfo.docker.connection.type === 'https'}
 										<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/15 text-green-600 dark:text-green-400 shadow-sm ring-1 ring-green-500/20">
-											HTTPS (TLS)
+											{$_('settings.about_page.connection_https')}
 										</span>
 										<span class="text-xs font-mono text-muted-foreground">{systemInfo.docker.connection.host}:{systemInfo.docker.connection.port}</span>
 									{:else}
 										<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 shadow-sm ring-1 ring-amber-500/20">
-											HTTP
+											{$_('settings.about_page.connection_http')}
 										</span>
 										<span class="text-xs font-mono text-muted-foreground">{systemInfo.docker.connection.host}:{systemInfo.docker.connection.port}</span>
 									{/if}
@@ -527,17 +548,17 @@
 						<div class="space-y-1.5">
 							<div class="flex items-center gap-2 text-xs font-medium text-muted-foreground">
 								<Cpu class="w-3.5 h-3.5" />
-								Host
+								{$_('settings.about_page.host')}
 							</div>
 							<div class="text-sm pl-5">
 								<div class="flex items-center gap-2">
-									<span class="text-muted-foreground">Name</span>
+									<span class="text-muted-foreground">{$_('settings.about_page.name')}</span>
 									<span>{systemInfo.host.name}</span>
 									<span class="text-muted-foreground/50">|</span>
-									<span class="text-muted-foreground">CPUs</span>
+									<span class="text-muted-foreground">{$_('settings.about_page.cpus')}</span>
 									<span>{systemInfo.host.cpus}</span>
 									<span class="text-muted-foreground/50">|</span>
-									<span class="text-muted-foreground">Memory</span>
+									<span class="text-muted-foreground">{$_('settings.about_page.memory')}</span>
 									<span>{formatBytes(systemInfo.host.memory)}</span>
 								</div>
 							</div>
@@ -548,7 +569,7 @@
 						<div class="space-y-1.5">
 							<div class="flex items-center gap-2 text-xs font-medium text-muted-foreground">
 								<Cpu class="w-3.5 h-3.5" />
-								Runtime
+								{$_('settings.about_page.runtime')}
 							</div>
 							<div class="text-sm pl-5">
 								<div class="flex items-center gap-2 flex-wrap">
@@ -558,23 +579,23 @@
 										</span>
 									{/if}
 									<span class="text-muted-foreground/50">|</span>
-									<span class="text-muted-foreground">Platform</span>
+									<span class="text-muted-foreground">{$_('settings.about_page.platform')}</span>
 									<span>{systemInfo.runtime.platform}/{systemInfo.runtime.arch}</span>
 									<span class="text-muted-foreground/50">|</span>
-									<span class="text-muted-foreground">Memory</span>
+									<span class="text-muted-foreground">{$_('settings.about_page.memory')}</span>
 									<span>{formatBytes(systemInfo.runtime.memory.rss)}</span>
 								</div>
 								{#if systemInfo.runtime.container.inContainer}
 								<div class="flex items-center gap-2 flex-wrap mt-1">
 									<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/15 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-blue-500/20">
-										{systemInfo.runtime.container.runtime || 'Container'}
+										{systemInfo.runtime.container.runtime || $_('settings.about_page.container')}
 									</span>
 									{#if systemInfo.runtime.ownContainer}
 										<span class="text-xs font-mono text-muted-foreground">{systemInfo.runtime.ownContainer.image}</span>
 									{/if}
 									{#if systemInfo.docker}
 										<span class="text-muted-foreground/50">|</span>
-										<span class="text-muted-foreground">Docker</span>
+										<span class="text-muted-foreground">{$_('settings.about_page.docker')}</span>
 										<span>{systemInfo.docker.version}</span>
 									{/if}
 								</div>
@@ -586,13 +607,13 @@
 						<div class="space-y-1.5">
 							<div class="flex items-center gap-2 text-xs font-medium text-muted-foreground">
 								<HardDrive class="w-3.5 h-3.5" />
-								Database
+								{$_('settings.about_page.database')}
 							</div>
 							<div class="text-sm pl-5 space-y-1">
 								<div class="flex items-center gap-2 flex-wrap">
 									{#if systemInfo.database.type === 'PostgreSQL'}
 										<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-500/15 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-blue-500/20">
-											PostgreSQL
+											{$_('settings.about_page.db_postgres')}
 										</span>
 										{#if systemInfo.database.host}
 											<span class="text-muted-foreground/50">|</span>
@@ -600,13 +621,13 @@
 										{/if}
 									{:else}
 										<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 shadow-sm ring-1 ring-emerald-500/20">
-											SQLite
+											{$_('settings.about_page.db_sqlite')}
 										</span>
 									{/if}
 								</div>
 								{#if systemInfo.database.schemaVersion}
 									<div class="flex items-center gap-2">
-										<span class="text-muted-foreground">Schema</span>
+										<span class="text-muted-foreground">{$_('settings.about_page.schema')}</span>
 										<span class="font-mono text-xs">{systemInfo.database.schemaVersion}</span>
 										{#if systemInfo.database.schemaDate}
 											<span class="text-muted-foreground/60 text-xs">({systemInfo.database.schemaDate})</span>
@@ -626,49 +647,49 @@
 								{:else}
 									<Crown class="w-3.5 h-3.5" />
 								{/if}
-								License
+								{$_('settings.about_page.license')}
 							</div>
 							<div class="text-sm pl-5">
 								<div class="flex items-center gap-2 flex-wrap">
-									<span class="text-muted-foreground">Edition</span>
+									<span class="text-muted-foreground">{$_('settings.about_page.edition')}</span>
 									{#if $licenseStore.licenseType === 'enterprise'}
 										<span class="text-amber-500 font-medium flex items-center gap-1">
 											<Crown class="w-3.5 h-3.5 fill-current" />
-											Enterprise
+											{$_('settings.about_page.enterprise')}
 										</span>
 									{:else if $licenseStore.licenseType === 'smb'}
 										<span class="text-blue-500 font-medium flex items-center gap-1">
 											<Building2 class="w-3.5 h-3.5" />
-											SMB
+											{$_('settings.about_page.smb')}
 										</span>
 									{:else}
-										<span>Community</span>
+										<span>{$_('settings.about_page.community')}</span>
 									{/if}
 									{#if $licenseStore.isLicensed && $licenseStore.licensedTo}
 										<span class="text-muted-foreground/50">|</span>
-										<span class="text-muted-foreground">Licensed to</span>
+										<span class="text-muted-foreground">{$_('settings.about_page.licensed_to')}</span>
 										<span>{$licenseStore.licensedTo}</span>
 									{/if}
 									<span class="text-muted-foreground/50">|</span>
-									<button class="text-primary hover:underline cursor-pointer" onclick={() => showLicenseModal = true}>Terms</button>
+									<button class="text-primary hover:underline cursor-pointer" onclick={() => showLicenseModal = true}>{$_('settings.about_page.terms')}</button>
 									<span class="text-muted-foreground/50">|</span>
-									<button class="text-primary hover:underline cursor-pointer" onclick={() => showPrivacyModal = true}>Privacy</button>
+									<button class="text-primary hover:underline cursor-pointer" onclick={() => showPrivacyModal = true}>{$_('settings.about_page.privacy')}</button>
 								</div>
 								<div class="flex items-center gap-2 flex-wrap mt-3 pt-2 border-t border-border/50">
 									<a href="https://github.com/Finsys/dockhand/issues" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline inline-flex items-center gap-1.5 font-medium">
 										<MessageSquarePlus class="w-4 h-4" />
-										Submit issue or idea
+										{$_('settings.about_page.submit_issue')}
 									</a>
 									{#if !$licenseStore.isLicensed}
 										<span class="text-muted-foreground/50">|</span>
 										<a href="https://buymeacoffee.com/dockhand" target="_blank" rel="noopener noreferrer" class="hover:underline inline-flex items-center gap-1.5 font-medium text-amber-600 dark:text-yellow-400">
 											<Coffee class="w-4 h-4" />
-											Buy me a coffee
+											{$_('settings.about_page.buy_coffee')}
 										</a>
 									{/if}
 								</div>
 								{#if !$licenseStore.isLicensed}
-									<p class="text-xs text-muted-foreground mt-2">Dockhand Community Edition is free and always will be. No strings attached. Like it? Fuel the dev with caffeine.</p>
+									<p class="text-xs text-muted-foreground mt-2">{$_('settings.about_page.community_note')}</p>
 								{/if}
 							</div>
 						</div>
@@ -681,35 +702,35 @@
 									<Box class="w-4 h-4 text-blue-500" />
 								</div>
 								<div class="text-lg font-bold">{systemInfo.stats.containers.total}</div>
-								<div class="text-2xs text-muted-foreground font-medium">Containers</div>
+								<div class="text-2xs text-muted-foreground font-medium">{$_('settings.about_page.stats_containers')}</div>
 							</div>
 							<div class="stat-box stat-box-cyan">
 								<div class="stat-icon-wrapper bg-cyan-500/10">
 									<Layers class="w-4 h-4 text-cyan-500" />
 								</div>
 								<div class="text-lg font-bold">{systemInfo.stats.stacks}</div>
-								<div class="text-2xs text-muted-foreground font-medium">Stacks</div>
+								<div class="text-2xs text-muted-foreground font-medium">{$_('settings.about_page.stats_stacks')}</div>
 							</div>
 							<div class="stat-box stat-box-purple">
 								<div class="stat-icon-wrapper bg-purple-500/10">
 									<Images class="w-4 h-4 text-purple-500" />
 								</div>
 								<div class="text-lg font-bold">{systemInfo.stats.images}</div>
-								<div class="text-2xs text-muted-foreground font-medium">Images</div>
+								<div class="text-2xs text-muted-foreground font-medium">{$_('settings.about_page.stats_images')}</div>
 							</div>
 							<div class="stat-box stat-box-green">
 								<div class="stat-icon-wrapper bg-green-500/10">
 									<HardDrive class="w-4 h-4 text-green-500" />
 								</div>
 								<div class="text-lg font-bold">{systemInfo.stats.volumes}</div>
-								<div class="text-2xs text-muted-foreground font-medium">Volumes</div>
+								<div class="text-2xs text-muted-foreground font-medium">{$_('settings.about_page.stats_volumes')}</div>
 							</div>
 							<div class="stat-box stat-box-orange">
 								<div class="stat-icon-wrapper bg-orange-500/10">
 									<Network class="w-4 h-4 text-orange-500" />
 								</div>
 								<div class="text-lg font-bold">{systemInfo.stats.networks}</div>
-								<div class="text-2xs text-muted-foreground font-medium">Networks</div>
+								<div class="text-2xs text-muted-foreground font-medium">{$_('settings.about_page.stats_networks')}</div>
 							</div>
 						</div>
 						{/if}
@@ -726,12 +747,12 @@
 				<Tabs.List class="w-full grid grid-cols-2">
 					<Tabs.Trigger value="releases" class="flex items-center gap-2">
 						<FileText class="w-4 h-4" />
-						<span>Release notes</span>
+						<span>{$_('settings.about_page.releases_tab')}</span>
 						<Badge variant="secondary" class="text-2xs">{changelog.length}</Badge>
 					</Tabs.Trigger>
 					<Tabs.Trigger value="dependencies" class="flex items-center gap-2">
 						<Package class="w-4 h-4" />
-						<span>Dependencies</span>
+						<span>{$_('settings.about_page.dependencies_tab')}</span>
 						<Badge variant="secondary" class="text-2xs">{dependencies.length}</Badge>
 					</Tabs.Trigger>
 				</Tabs.List>
@@ -740,7 +761,7 @@
 			<Tabs.Content value="releases" class="px-4 pb-4">
 				{#if loadingChangelog}
 					<div class="flex items-center justify-center py-8">
-						<div class="text-sm text-muted-foreground">Loading releases...</div>
+						<div class="text-sm text-muted-foreground">{$_('settings.about_page.loading_releases')}</div>
 					</div>
 				{:else if changelogError}
 					<div class="flex items-center justify-center py-8">
@@ -766,9 +787,9 @@
 										<Tag class="w-4 h-4 text-primary" />
 										<span class="font-semibold">v{release.version}</span>
 										{#if index === 0}
-											<Badge variant="default" class="text-2xs">Latest</Badge>
+											<Badge variant="default" class="text-2xs">{$_('settings.about_page.latest')}</Badge>
 										{/if}
-										<Badge variant="secondary" class="text-2xs">{release.changes.length} changes</Badge>
+										<Badge variant="secondary" class="text-2xs">{$_('settings.about_page.changes_count', { values: { count: release.changes.length } })}</Badge>
 									</div>
 									<span class="text-xs text-muted-foreground">{formatChangelogDate(release.date)}</span>
 								</div>
@@ -780,12 +801,12 @@
 													{#if change.type === 'feature'}
 														<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-2xs font-medium bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 shrink-0">
 															<Sparkles class="w-3 h-3" />
-															New
+															{$_('settings.about_page.change_new')}
 														</span>
 													{:else if change.type === 'fix'}
 														<span class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-2xs font-medium bg-amber-500/15 text-amber-600 dark:text-amber-400 shrink-0">
 															<Bug class="w-3 h-3" />
-															Fix
+															{$_('settings.about_page.change_fix')}
 														</span>
 													{/if}
 													<span>{change.text}</span>
@@ -809,7 +830,7 @@
 						<Search class="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
 						<Input
 							type="text"
-							placeholder="Search packages or licenses..."
+							placeholder={$_('settings.about_page.search_deps_placeholder')}
 							class="h-7 text-xs pl-7"
 							bind:value={depsSearch}
 						/>
@@ -817,7 +838,7 @@
 				</div>
 				{#if loadingDeps}
 					<div class="flex items-center justify-center py-8">
-						<div class="text-sm text-muted-foreground">Loading dependencies...</div>
+						<div class="text-sm text-muted-foreground">{$_('settings.about_page.loading_dependencies')}</div>
 					</div>
 				{:else if depsError}
 					<div class="flex items-center justify-center py-8">
@@ -826,9 +847,9 @@
 				{:else}
 					<div class="space-y-1">
 						<div class="grid grid-cols-[1fr_auto_auto_auto] gap-2 text-2xs font-medium text-muted-foreground px-2 py-1 border-b">
-							<div>Package</div>
-							<div class="w-20 text-center">Version</div>
-							<div class="w-24 text-center">License</div>
+							<div>{$_('settings.about_page.package')}</div>
+							<div class="w-20 text-center">{$_('settings.about_page.version')}</div>
+							<div class="w-24 text-center">{$_('settings.about_page.license_col')}</div>
 							<div class="w-8"></div>
 						</div>
 						<div class="max-h-[300px] overflow-y-auto">
@@ -848,7 +869,7 @@
 												target="_blank"
 												rel="noopener noreferrer"
 												class="text-muted-foreground hover:text-foreground transition-colors"
-												title="View on GitHub"
+												title={$_('settings.about_page.view_github')}
 											>
 												<ExternalLink class="w-3.5 h-3.5" />
 											</a>
