@@ -14,6 +14,7 @@
 	import { currentEnvironment } from '$lib/stores/environment';
 	import type { EnvironmentStats } from './api/dashboard/stats/+server';
 	import { getLabelColor, getLabelBgColor } from '$lib/utils/label-colors';
+	import { _ } from '$lib/i18n';
 
 	const LABEL_FILTER_STORAGE_KEY = 'dockhand-dashboard-label-filter';
 
@@ -215,7 +216,7 @@
 		}
 
 		if (streamReconnectAttempts >= MAX_STREAM_RECONNECT_ATTEMPTS) {
-			streamError = 'Connection failed - click refresh to retry';
+			streamError = $_('dashboard.connection_failed');
 			return;
 		}
 
@@ -848,7 +849,7 @@
 	<!-- Header -->
 	<div class="flex flex-wrap justify-between items-center gap-3">
 		<div class="flex items-center gap-4">
-			<PageHeader icon={LayoutGrid} title="Environments" />
+			<PageHeader icon={LayoutGrid} title={$_('dashboard.title')} />
 
 			<!-- Label filter toggles (only show if there are labels) -->
 			{#if allLabels.length > 0}
@@ -860,7 +861,7 @@
 							: 'bg-muted text-muted-foreground hover:bg-muted/80'}"
 						onclick={() => filterLabels = []}
 					>
-						All
+						{$_('common.all')}
 					</button>
 					{#each allLabels as label}
 						{@const isSelected = filterLabels.includes(label)}
@@ -884,7 +885,7 @@
 			<button
 				onclick={() => goto('/settings?tab=environments&new=true')}
 				class="p-1.5 rounded hover:bg-muted transition-colors"
-				title="Add environment"
+				title={$_('dashboard.add_environment')}
 			>
 				<Plus class="w-4 h-4" />
 			</button>
@@ -896,7 +897,7 @@
 						<button
 							{...props}
 							class="p-1.5 rounded hover:bg-muted transition-colors"
-							title="Auto-layout tiles"
+							title={$_('dashboard.auto_layout')}
 						>
 							<LayoutTemplate class="w-4 h-4" />
 						</button>
@@ -905,19 +906,19 @@
 				<DropdownMenu.Content align="end" class="w-36">
 					<DropdownMenu.Item onclick={() => applyAutoLayout(1, 1)} class="flex items-center gap-2 cursor-pointer">
 						<Square class="w-4 h-4" />
-						<span>Compact</span>
+						<span>{$_('dashboard.compact')}</span>
 					</DropdownMenu.Item>
 					<DropdownMenu.Item onclick={() => applyAutoLayout(1, 2)} class="flex items-center gap-2 cursor-pointer">
 						<RectangleVertical class="w-4 h-4" />
-						<span>Standard</span>
+						<span>{$_('dashboard.standard')}</span>
 					</DropdownMenu.Item>
 					<DropdownMenu.Item onclick={() => applyAutoLayout(1, 4)} class="flex items-center gap-2 cursor-pointer">
 						<Rows3 class="w-4 h-4" />
-						<span>Detailed</span>
+						<span>{$_('dashboard.detailed')}</span>
 					</DropdownMenu.Item>
 					<DropdownMenu.Item onclick={() => applyAutoLayout(2, 4)} class="flex items-center gap-2 cursor-pointer">
 						<Maximize2 class="w-4 h-4" />
-						<span>Full</span>
+						<span>{$_('dashboard.full')}</span>
 					</DropdownMenu.Item>
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>
@@ -926,7 +927,7 @@
 			<button
 				onclick={() => fetchStatsStreaming(true)}
 				class="p-1.5 rounded hover:bg-muted transition-colors"
-				title="Refresh"
+				title={$_('common.refresh')}
 				disabled={refreshing}
 			>
 				<RefreshCw class="w-4 h-4 {refreshing ? 'animate-spin' : ''}" />
@@ -938,7 +939,7 @@
 	{#if initialLoading && tiles.length === 0}
 		<div class="flex items-center justify-center gap-2 text-muted-foreground py-8">
 			<Loader2 class="w-5 h-5 animate-spin text-primary" />
-			<span class="text-sm">Loading environments...</span>
+			<span class="text-sm">{$_('dashboard.loading_environments')}</span>
 		</div>
 	{:else if tiles.length === 0}
 		<!-- No environments -->
@@ -946,10 +947,10 @@
 			<div class="w-16 h-16 mb-4 rounded-2xl border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
 				<Server class="w-8 h-8 opacity-40" />
 			</div>
-			<p class="text-lg font-medium text-foreground/70">No environments configured</p>
-			<p class="text-sm text-muted-foreground mb-4">Add an environment to start managing your Docker hosts</p>
+			<p class="text-lg font-medium text-foreground/70">{$_('dashboard.no_environments')}</p>
+			<p class="text-sm text-muted-foreground mb-4">{$_('dashboard.no_environments_desc')}</p>
 			<Button variant="outline" size="sm" onclick={() => goto('/settings?tab=environments')}>
-				Go to Settings
+				{$_('dashboard.go_to_settings')}
 			</Button>
 		</div>
 	{:else if filteredGridItems.length === 0}
@@ -958,10 +959,10 @@
 			<div class="w-16 h-16 mb-4 rounded-2xl border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
 				<Tags class="w-8 h-8 opacity-40" />
 			</div>
-			<p class="text-lg font-medium text-foreground/70">No matching environments</p>
-			<p class="text-sm text-muted-foreground mb-4">No environments match the selected label filters</p>
+			<p class="text-lg font-medium text-foreground/70">{$_('dashboard.no_matching_environments')}</p>
+			<p class="text-sm text-muted-foreground mb-4">{$_('dashboard.no_matching_environments_desc')}</p>
 			<Button variant="outline" size="sm" onclick={() => filterLabels = []}>
-				Clear filters
+				{$_('dashboard.clear_filters')}
 			</Button>
 		</div>
 	{:else}

@@ -27,6 +27,7 @@
 	import { licenseStore } from '$lib/stores/license';
 	import { authStore, hasAnyAccess } from '$lib/stores/auth';
 	import * as Avatar from '$lib/components/ui/avatar';
+	import { _, locale } from '$lib/i18n';
 
 	import type { Permissions } from '$lib/stores/auth';
 
@@ -88,21 +89,25 @@
 		return $hasAnyAccess(item.permission);
 	}
 
-	const menuItems: readonly MenuItem[] = [
-		{ href: '/', Icon: LayoutDashboard, label: 'Dashboard', permission: 'always' },
-		{ href: '/containers', Icon: Box, label: 'Containers', permission: 'containers' },
-		{ href: '/logs', Icon: ScrollText, label: 'Logs', permission: 'containers' },
-		{ href: '/terminal', Icon: Terminal, label: 'Shell', permission: 'containers' },
-		{ href: '/stacks', Icon: Layers, label: 'Stacks', permission: 'stacks' },
-		{ href: '/images', Icon: Images, label: 'Images', permission: 'images' },
-		{ href: '/volumes', Icon: HardDrive, label: 'Volumes', permission: 'volumes' },
-		{ href: '/networks', Icon: Network, label: 'Networks', permission: 'networks' },
-		{ href: '/registry', Icon: Download, label: 'Registry', permission: 'registries' },
-		{ href: '/activity', Icon: Activity, label: 'Activity', permission: 'activity' },
-		{ href: '/schedules', Icon: Timer, label: 'Schedules', permission: 'schedules' },
-		{ href: '/audit', Icon: ClipboardList, label: 'Audit log', permission: 'audit_logs', enterpriseOnly: true },
-		{ href: '/settings', Icon: Settings, label: 'Settings', permission: 'settings' }
-	] as const;
+	const menuItems = $derived.by(() => {
+		// Force dependency on locale by reading it
+		const localeValue = $locale;
+		return [
+			{ href: '/', Icon: LayoutDashboard, label: $_('nav.dashboard'), permission: 'always' as const },
+			{ href: '/containers', Icon: Box, label: $_('nav.containers'), permission: 'containers' as const },
+			{ href: '/logs', Icon: ScrollText, label: $_('nav.logs'), permission: 'containers' as const },
+			{ href: '/terminal', Icon: Terminal, label: $_('nav.shell'), permission: 'containers' as const },
+			{ href: '/stacks', Icon: Layers, label: $_('nav.stacks'), permission: 'stacks' as const },
+			{ href: '/images', Icon: Images, label: $_('nav.images'), permission: 'images' as const },
+			{ href: '/volumes', Icon: HardDrive, label: $_('nav.volumes'), permission: 'volumes' as const },
+			{ href: '/networks', Icon: Network, label: $_('nav.networks'), permission: 'networks' as const },
+			{ href: '/registry', Icon: Download, label: $_('nav.registry'), permission: 'registries' as const },
+			{ href: '/activity', Icon: Activity, label: $_('nav.activity'), permission: 'activity' as const },
+			{ href: '/schedules', Icon: Timer, label: $_('nav.schedules'), permission: 'schedules' as const },
+			{ href: '/audit', Icon: ClipboardList, label: $_('nav.audit_log'), permission: 'audit_logs' as const, enterpriseOnly: true },
+			{ href: '/settings', Icon: Settings, label: $_('nav.settings'), permission: 'settings' as const }
+		];
+	});
 </script>
 
 <Sidebar.Root collapsible="icon">
@@ -120,8 +125,8 @@
 				type="button"
 				onclick={() => sidebar.toggle()}
 				class="absolute right-1 p-1.5 rounded-md hover:bg-sidebar-accent text-gray-300 hover:text-gray-400 transition-colors"
-				title="Collapse sidebar"
-				aria-label="Collapse sidebar"
+				title={$_('nav.collapse_sidebar')}
+				aria-label={$_('nav.collapse_sidebar')}
 			>
 				<PanelLeftClose class="w-4 h-4" aria-hidden="true" />
 			</button>
@@ -131,8 +136,8 @@
 			type="button"
 			onclick={() => sidebar.toggle()}
 			class="hidden group-data-[state=collapsed]:flex p-1.5 rounded-md hover:bg-sidebar-accent text-muted-foreground hover:text-foreground transition-colors"
-			title="Expand sidebar"
-			aria-label="Expand sidebar"
+			title={$_('nav.expand_sidebar')}
+			aria-label={$_('nav.expand_sidebar')}
 		>
 			<PanelLeft class="w-4 h-4" aria-hidden="true" />
 		</button>
@@ -183,10 +188,10 @@
 						type="button"
 						onclick={handleLogout}
 						class="flex items-center gap-2 w-full px-2 py-1.5 group-data-[state=collapsed]:px-1 group-data-[state=collapsed]:py-1 text-sm text-muted-foreground hover:text-foreground hover:bg-sidebar-accent rounded-md transition-colors group-data-[state=collapsed]:justify-center"
-						title="Sign out"
+						title={$_('nav.sign_out')}
 					>
 						<LogOut class="w-4 h-4 shrink-0 group-data-[state=collapsed]:w-3.5 group-data-[state=collapsed]:h-3.5" />
-						<span class="group-data-[state=collapsed]:hidden">Sign out</span>
+						<span class="group-data-[state=collapsed]:hidden">{$_('nav.sign_out')}</span>
 					</button>
 				</Sidebar.MenuItem>
 			</Sidebar.Menu>

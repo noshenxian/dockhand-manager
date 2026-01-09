@@ -14,6 +14,7 @@
 	import { toast } from 'svelte-sonner';
 	import ThemeSelector from '$lib/components/ThemeSelector.svelte';
 	import * as Tooltip from '$lib/components/ui/tooltip';
+	import { _ } from '$lib/i18n';
 
 	// General settings state - these derive from the store
 	let confirmDestructive = $derived($appSettings.confirmDestructive);
@@ -43,40 +44,40 @@
 	function handleScheduleRetentionChange(e: Event) {
 		const value = Math.max(1, Math.min(365, parseInt((e.target as HTMLInputElement).value) || 30));
 		appSettings.setScheduleRetentionDays(value);
-		toast.success('Schedule retention updated');
+		toast.success($_('settings.schedule_retention_updated'));
 	}
 
 	function handleEventRetentionChange(e: Event) {
 		const value = Math.max(1, Math.min(365, parseInt((e.target as HTMLInputElement).value) || 30));
 		appSettings.setEventRetentionDays(value);
-		toast.success('Event retention updated');
+		toast.success($_('settings.event_retention_updated'));
 	}
 
 	function handleScheduleCleanupCronChange(cron: string) {
 		appSettings.setScheduleCleanupCron(cron);
-		toast.success('Schedule cleanup cron updated');
+		toast.success($_('settings.schedule_cleanup_cron_updated'));
 	}
 
 	function handleEventCleanupCronChange(cron: string) {
 		appSettings.setEventCleanupCron(cron);
-		toast.success('Event cleanup cron updated');
+		toast.success($_('settings.event_cleanup_cron_updated'));
 	}
 
 	function handleScheduleCleanupEnabledChange() {
 		appSettings.setScheduleCleanupEnabled(!scheduleCleanupEnabled);
-		toast.success(scheduleCleanupEnabled ? 'Schedule cleanup disabled' : 'Schedule cleanup enabled');
+		toast.success(scheduleCleanupEnabled ? $_('settings.schedule_cleanup_disabled') : $_('settings.schedule_cleanup_enabled'));
 	}
 
 	function handleEventCleanupEnabledChange() {
 		appSettings.setEventCleanupEnabled(!eventCleanupEnabled);
-		toast.success(eventCleanupEnabled ? 'Event cleanup disabled' : 'Event cleanup enabled');
+		toast.success(eventCleanupEnabled ? $_('settings.event_cleanup_disabled') : $_('settings.event_cleanup_enabled'));
 	}
 
 	function handleGrypeArgsBlur(e: Event) {
 		const value = (e.target as HTMLInputElement).value.trim();
 		if (value !== defaultGrypeArgs) {
 			appSettings.setDefaultGrypeArgs(value);
-			toast.success('Grype default arguments updated');
+			toast.success($_('settings.grype_args_updated'));
 		}
 	}
 
@@ -84,14 +85,14 @@
 		const value = (e.target as HTMLInputElement).value.trim();
 		if (value !== defaultTrivyArgs) {
 			appSettings.setDefaultTrivyArgs(value);
-			toast.success('Trivy default arguments updated');
+			toast.success($_('settings.trivy_args_updated'));
 		}
 	}
 
 	function handleLogBufferSizeChange(e: Event) {
 		const value = Math.max(100, Math.min(5000, parseInt((e.target as HTMLInputElement).value) || 500));
 		appSettings.setLogBufferSizeKb(value);
-		toast.success('Log buffer size updated');
+		toast.success($_('settings.log_buffer_size_updated'));
 	}
 </script>
 
@@ -103,7 +104,7 @@
 				<Card.Header>
 					<Card.Title class="text-sm font-medium flex items-center gap-2">
 						<Eye class="w-4 h-4" />
-						Appearance
+						{$_('settings.appearance')}
 						{#if !$authStore.authEnabled}
 							<Tooltip.Provider delayDuration={100}>
 								<Tooltip.Root>
@@ -112,7 +113,7 @@
 									</Tooltip.Trigger>
 									<Tooltip.Portal>
 										<Tooltip.Content side="right" sideOffset={8} class="!w-80">
-											Theme and font settings are global when authentication is disabled. When auth is enabled, users can customize their appearance in their profile.
+											{$_('settings.theme_auth_tooltip')}
 										</Tooltip.Content>
 									</Tooltip.Portal>
 								</Tooltip.Root>
@@ -126,58 +127,58 @@
 						<div class="space-y-4">
 							<div class="space-y-1">
 								<div class="flex items-center gap-3">
-									<Label>Show stopped containers</Label>
+									<Label>{$_('settings.show_stopped_containers')}</Label>
 									<TogglePill
 										checked={showStoppedContainers}
 										onchange={() => {
 											appSettings.setShowStoppedContainers(!showStoppedContainers);
-											toast.success(showStoppedContainers ? 'Stopped containers hidden' : 'Stopped containers shown');
+											toast.success(showStoppedContainers ? $_('settings.stopped_containers_hidden') : $_('settings.stopped_containers_shown'));
 										}}
 										disabled={!$canAccess('settings', 'edit')}
 									/>
 								</div>
-								<p class="text-xs text-muted-foreground">Display stopped and exited containers in lists</p>
+								<p class="text-xs text-muted-foreground">{$_('settings.show_stopped_containers_desc')}</p>
 							</div>
 							<div class="space-y-1">
 								<div class="flex items-center gap-3">
-									<Label>Highlight available updates</Label>
+									<Label>{$_('settings.highlight_updates')}</Label>
 									<TogglePill
 										checked={highlightUpdates}
 										onchange={() => {
 											appSettings.setHighlightUpdates(!highlightUpdates);
-											toast.success(highlightUpdates ? 'Update highlighting disabled' : 'Update highlighting enabled');
+											toast.success(highlightUpdates ? $_('settings.update_highlighting_disabled') : $_('settings.update_highlighting_enabled'));
 										}}
 										disabled={!$canAccess('settings', 'edit')}
 									/>
 								</div>
-								<p class="text-xs text-muted-foreground">Highlight container rows in amber when updates are available</p>
+								<p class="text-xs text-muted-foreground">{$_('settings.highlight_updates_desc')}</p>
 							</div>
 							<div class="space-y-1">
 								<div class="flex items-center gap-3">
-									<Label>Time format</Label>
+									<Label>{$_('settings.time_format')}</Label>
 									<ToggleSwitch
 										value={timeFormat}
 										leftValue="24h"
 										rightValue="12h"
 										onchange={(newFormat) => {
 											appSettings.setTimeFormat(newFormat as '12h' | '24h');
-											toast.success(`Time format set to ${newFormat === '12h' ? '12-hour (AM/PM)' : '24-hour'}`);
+											toast.success(newFormat === '12h' ? $_('settings.time_format_set') : $_('settings.time_format_set_24h'));
 										}}
 										disabled={!$canAccess('settings', 'edit')}
 									/>
 								</div>
-								<p class="text-xs text-muted-foreground">Display timestamps in 12-hour (AM/PM) or 24-hour format</p>
+								<p class="text-xs text-muted-foreground">{$_('settings.time_format_desc')}</p>
 							</div>
 							<div class="space-y-1">
 								<div class="flex items-center gap-3">
-									<Label>Date format</Label>
+									<Label>{$_('settings.date_format')}</Label>
 									<Select.Root
 										type="single"
 										value={dateFormat}
 										onValueChange={(value) => {
 											if (value) {
 												appSettings.setDateFormat(value as DateFormat);
-												toast.success(`Date format set to ${value}`);
+												toast.success($_('settings.date_format_set', { value: value }));
 											}
 										}}
 										disabled={!$canAccess('settings', 'edit')}
@@ -198,7 +199,7 @@
 										</Select.Content>
 									</Select.Root>
 								</div>
-								<p class="text-xs text-muted-foreground">How dates are displayed throughout the app</p>
+								<p class="text-xs text-muted-foreground">{$_('settings.date_format_desc')}</p>
 							</div>
 						</div>
 						<!-- Right column: Theme settings (only when auth disabled) -->
@@ -210,8 +211,8 @@
 							<div class="text-xs text-muted-foreground flex items-start gap-1.5">
 								<HelpCircle class="w-3.5 h-3.5 shrink-0 mt-0.5" />
 								<div>
-									<p>Appearance settings (theme, fonts) are personal when auth is enabled.</p>
-									<a href="/profile" class="text-primary hover:underline">Configure in your profile</a>
+									<p>{$_('settings.appearance_personal_note')}</p>
+									<a href="/profile" class="text-primary hover:underline">{$_('settings.configure_in_profile')}</a>
 								</div>
 							</div>
 						{/if}
@@ -223,21 +224,21 @@
 				<Card.Header>
 					<Card.Title class="text-sm font-medium flex items-center gap-2">
 						<Globe class="w-4 h-4" />
-						Scheduling
+						{$_('settings.scheduling')}
 					</Card.Title>
 				</Card.Header>
 				<Card.Content class="space-y-4">
 					<div class="space-y-2">
-						<Label>Default timezone</Label>
+						<Label>{$_('settings.default_timezone')}</Label>
 						<TimezoneSelector
 							value={defaultTimezone}
 							onchange={(value) => {
 								appSettings.setDefaultTimezone(value);
-								toast.success(`Default timezone set to ${value}`);
+								toast.success($_('settings.default_timezone_set', { value: value }));
 							}}
 							class="w-[320px]"
 						/>
-						<p class="text-xs text-muted-foreground">Default timezone for new environments. Used for scheduled tasks like auto-updates.</p>
+						<p class="text-xs text-muted-foreground">{$_('settings.default_timezone_desc')}</p>
 					</div>
 				</Card.Content>
 			</Card.Root>
@@ -246,23 +247,23 @@
 				<Card.Header>
 					<Card.Title class="text-sm font-medium flex items-center gap-2">
 						<Bell class="w-4 h-4" />
-						Confirmations
+						{$_('settings.confirmations')}
 					</Card.Title>
 				</Card.Header>
 				<Card.Content class="space-y-4">
 					<div class="space-y-1">
 						<div class="flex items-center gap-3">
-							<Label>Confirm destructive actions</Label>
+							<Label>{$_('settings.confirm_destructive')}</Label>
 							<TogglePill
 								checked={confirmDestructive}
 								onchange={() => {
 									appSettings.setConfirmDestructive(!confirmDestructive);
-									toast.success(confirmDestructive ? 'Confirmations disabled' : 'Confirmations enabled');
+									toast.success(confirmDestructive ? $_('settings.confirmations_disabled') : $_('settings.confirmations_enabled'));
 								}}
 								disabled={!$canAccess('settings', 'edit')}
 							/>
 						</div>
-						<p class="text-xs text-muted-foreground">Show confirmation dialogs before deleting resources</p>
+						<p class="text-xs text-muted-foreground">{$_('settings.confirm_destructive_desc')}</p>
 					</div>
 				</Card.Content>
 			</Card.Root>
@@ -271,12 +272,12 @@
 				<Card.Header>
 					<Card.Title class="text-sm font-medium flex items-center gap-2">
 						<FileText class="w-4 h-4" />
-						Logs & files
+						{$_('settings.logs_files')}
 					</Card.Title>
 				</Card.Header>
 				<Card.Content class="space-y-4">
 					<div class="space-y-2">
-						<Label for="log-buffer-size">Log buffer size (KB)</Label>
+						<Label for="log-buffer-size">{$_('settings.log_buffer_size')}</Label>
 						<div class="flex items-center gap-2">
 							<Input
 								id="log-buffer-size"
@@ -288,31 +289,31 @@
 								disabled={!$canAccess('settings', 'edit')}
 								class="w-24"
 							/>
-							<span class="text-sm text-muted-foreground">KB</span>
+							<span class="text-sm text-muted-foreground">{$_('settings.kb')}</span>
 						</div>
-						<p class="text-xs text-muted-foreground">Maximum log buffer per container panel. Older logs are truncated when exceeded.</p>
+						<p class="text-xs text-muted-foreground">{$_('settings.log_buffer_size_desc')}</p>
 						{#if logBufferSizeKb > 1000}
 							<div class="flex items-start gap-2 p-2 rounded-md bg-amber-500/10 border border-amber-500/20">
 								<AlertTriangle class="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-								<p class="text-xs text-amber-600 dark:text-amber-400">High values may degrade browser performance with verbose containers. Recommended: 250-1000 KB.</p>
+								<p class="text-xs text-amber-600 dark:text-amber-400">{$_('settings.log_buffer_size_warning')}</p>
 							</div>
 						{/if}
 					</div>
 					<div class="space-y-1">
 						<div class="flex items-center gap-3">
-							<Label>Download format</Label>
+							<Label>{$_('settings.download_format')}</Label>
 							<ToggleSwitch
 								value={downloadFormat}
 								leftValue="tar"
 								rightValue="tar.gz"
 								onchange={(newFormat) => {
 									appSettings.setDownloadFormat(newFormat as DownloadFormat);
-									toast.success(`Download format set to ${newFormat}`);
+									toast.success($_('settings.download_format_set', { value: newFormat }));
 								}}
 								disabled={!$canAccess('settings', 'edit')}
 							/>
 						</div>
-						<p class="text-xs text-muted-foreground">Archive format when downloading files from containers</p>
+						<p class="text-xs text-muted-foreground">{$_('settings.download_format_desc')}</p>
 					</div>
 				</Card.Content>
 			</Card.Root>
@@ -325,12 +326,12 @@
 				<Card.Header>
 					<Card.Title class="text-sm font-medium flex items-center gap-2">
 						<ShieldCheck class="w-4 h-4" />
-						Vulnerability scanners
+						{$_('settings.vulnerability_scanners')}
 					</Card.Title>
 				</Card.Header>
 				<Card.Content class="space-y-4">
 					<div class="space-y-2">
-						<Label for="grype-args">Default Grype arguments</Label>
+						<Label for="grype-args">{$_('settings.default_grype_args')}</Label>
 						<Input
 							id="grype-args"
 							value={defaultGrypeArgs}
@@ -338,10 +339,10 @@
 							disabled={!$canAccess('settings', 'edit')}
 							placeholder={"-o json -v {image}"}
 						/>
-						<p class="text-xs text-muted-foreground">Use <code class="bg-muted px-1 rounded">{'{image}'}</code> as placeholder for the image name</p>
+						<p class="text-xs text-muted-foreground">{$_('settings.image_placeholder_desc')}</p>
 					</div>
 					<div class="space-y-2">
-						<Label for="trivy-args">Default Trivy arguments</Label>
+						<Label for="trivy-args">{$_('settings.default_trivy_args')}</Label>
 						<Input
 							id="trivy-args"
 							value={defaultTrivyArgs}
@@ -349,7 +350,7 @@
 							disabled={!$canAccess('settings', 'edit')}
 							placeholder={"image --format json {image}"}
 						/>
-						<p class="text-xs text-muted-foreground">Use <code class="bg-muted px-1 rounded">{'{image}'}</code> as placeholder for the image name</p>
+						<p class="text-xs text-muted-foreground">{$_('settings.image_placeholder_desc')}</p>
 					</div>
 				</Card.Content>
 			</Card.Root>
@@ -358,20 +359,20 @@
 				<Card.Header>
 					<Card.Title class="text-sm font-medium flex items-center gap-2">
 						<Database class="w-4 h-4" />
-						System jobs
+						{$_('settings.system_jobs')}
 					</Card.Title>
 				</Card.Header>
 				<Card.Content class="space-y-4">
 					<div class="space-y-1">
 						<div class="flex items-center gap-3">
-							<Label for="schedule-retention">Schedule execution cleanup</Label>
+							<Label for="schedule-retention">{$_('settings.schedule_cleanup')}</Label>
 							<TogglePill
 								checked={scheduleCleanupEnabled}
 								onchange={handleScheduleCleanupEnabledChange}
 								disabled={!$canAccess('settings', 'edit')}
 							/>
 						</div>
-						<p class="text-xs text-muted-foreground">Delete executions older than specified days</p>
+						<p class="text-xs text-muted-foreground">{$_('settings.schedule_cleanup_desc')}</p>
 						<div class="flex items-center gap-2 mt-2">
 							<Input
 								id="schedule-retention"
@@ -383,7 +384,7 @@
 								disabled={!$canAccess('settings', 'edit') || !scheduleCleanupEnabled}
 								class="w-20"
 							/>
-							<span class="text-sm text-muted-foreground">days</span>
+							<span class="text-sm text-muted-foreground">{$_('settings.days')}</span>
 							<div class="ml-auto">
 								<CronEditor
 									value={scheduleCleanupCron}
@@ -395,14 +396,14 @@
 					</div>
 					<div class="space-y-1">
 						<div class="flex items-center gap-3">
-							<Label for="event-retention">Container event cleanup</Label>
+							<Label for="event-retention">{$_('settings.event_cleanup')}</Label>
 							<TogglePill
 								checked={eventCleanupEnabled}
 								onchange={handleEventCleanupEnabledChange}
 								disabled={!$canAccess('settings', 'edit')}
 							/>
 						</div>
-						<p class="text-xs text-muted-foreground">Delete events older than specified days</p>
+						<p class="text-xs text-muted-foreground">{$_('settings.event_cleanup_desc')}</p>
 						<div class="flex items-center gap-2 mt-2">
 							<Input
 								id="event-retention"
@@ -414,7 +415,7 @@
 								disabled={!$canAccess('settings', 'edit') || !eventCleanupEnabled}
 								class="w-20"
 							/>
-							<span class="text-sm text-muted-foreground">days</span>
+							<span class="text-sm text-muted-foreground">{$_('settings.days')}</span>
 							<div class="ml-auto">
 								<CronEditor
 									value={eventCleanupCron}
@@ -426,12 +427,11 @@
 					</div>
 					<div class="space-y-1 pt-2 border-t">
 						<div class="flex items-center gap-3">
-							<Label>Volume helper cleanup</Label>
-							<Badge variant="secondary" class="text-xs">Always enabled</Badge>
+							<Label>{$_('settings.volume_helper_cleanup')}</Label>
+							<Badge variant="secondary" class="text-xs">{$_('settings.always_enabled')}</Badge>
 						</div>
 						<p class="text-xs text-muted-foreground">
-							Automatically removes temporary containers used for browsing volume contents.
-							Runs every 30 minutes and on startup.
+							{$_('settings.volume_helper_cleanup_desc')}
 						</p>
 					</div>
 				</Card.Content>

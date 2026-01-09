@@ -9,6 +9,7 @@
 	import { Loader2, LogIn, Shield, AlertCircle, Network, User, KeyRound, TriangleAlert } from 'lucide-svelte';
 	import { authStore } from '$lib/stores/auth';
 	import * as Alert from '$lib/components/ui/alert';
+	import { _ } from '$lib/i18n';
 
 	interface AuthProvider {
 		id: string;
@@ -146,12 +147,12 @@
 					class="h-16 w-auto object-contain hidden dark:block"
 				/>
 			</div>
-			<Card.Title class="text-2xl font-bold">Welcome back</Card.Title>
+			<Card.Title class="text-2xl font-bold">{$_('login.title')}</Card.Title>
 			<Card.Description>
 				{#if requiresMfa}
-					Enter your two-factor authentication code
+					{$_('login.description_mfa')}
 				{:else}
-					Sign in to your Dockhand account
+					{$_('login.description')}
 				{/if}
 			</Card.Description>
 		</Card.Header>
@@ -179,7 +180,7 @@
 							{:else}
 								<KeyRound class="h-5 w-5" />
 							{/if}
-							<span>Continue with {provider.name}</span>
+							<span>{$_('login.continue_with', { default: 'Continue with', values: { provider: provider.name } })}</span>
 						</Button>
 					{/each}
 				</div>
@@ -190,7 +191,7 @@
 							<span class="w-full border-t"></span>
 						</div>
 						<div class="relative flex justify-center text-xs uppercase">
-							<span class="bg-card px-2 text-muted-foreground">or continue with</span>
+							<span class="bg-card px-2 text-muted-foreground">{$_('login.or_continue_with')}</span>
 						</div>
 					</div>
 				{/if}
@@ -201,7 +202,7 @@
 					{#if !requiresMfa}
 						{#if credentialProviders.length > 1}
 							<div class="space-y-2">
-								<Label>Sign in with</Label>
+								<Label>{$_('login.sign_in_with')}</Label>
 								<div class="grid gap-2">
 									{#each credentialProviders as provider}
 										{@const Icon = getProviderIcon(provider.type)}
@@ -218,11 +219,11 @@
 												<div class="font-medium text-sm">{provider.name}</div>
 												<div class="text-xs text-muted-foreground">
 													{#if provider.type === 'local'}
-														Local account
+														{$_('login.local_account')}
 													{:else if provider.type === 'ldap'}
-														LDAP directory
+														{$_('login.ldap_directory')}
 													{:else}
-														Single sign-on
+														{$_('login.single_sign_on')}
 													{/if}
 												</div>
 											</div>
@@ -236,11 +237,11 @@
 						{/if}
 
 						<div class="space-y-2">
-							<Label for="username">Username</Label>
+							<Label for="username">{$_('login.username')}</Label>
 							<Input
 								id="username"
 								type="text"
-								placeholder="Enter your username"
+								placeholder={$_('login.username_placeholder')}
 								bind:value={username}
 								required
 								disabled={loading}
@@ -249,11 +250,11 @@
 						</div>
 
 						<div class="space-y-2">
-							<Label for="password">Password</Label>
+							<Label for="password">{$_('login.password')}</Label>
 							<Input
 								id="password"
 								type="password"
-								placeholder="Enter your password"
+								placeholder={$_('login.password_placeholder')}
 								bind:value={password}
 								required
 								disabled={loading}
@@ -264,20 +265,20 @@
 						<div class="space-y-2">
 							<div class="flex items-center gap-2 text-sm text-muted-foreground mb-4">
 								<Shield class="h-4 w-4" />
-								<span>Two-factor authentication required</span>
+								<span>{$_('login.mfa_required')}</span>
 							</div>
-							<Label for="mfaToken">Authentication code</Label>
+							<Label for="mfaToken">{$_('login.auth_code')}</Label>
 							<Input
 								id="mfaToken"
 								type="text"
-								placeholder="Enter code"
+								placeholder={$_('login.auth_code_placeholder')}
 								bind:value={mfaToken}
 								required
 								disabled={loading}
 								autocomplete="one-time-code"
 							/>
 							<p class="text-xs text-muted-foreground">
-								Enter the 6-digit code from your authenticator app, or use a backup code
+								{$_('login.auth_code_help')}
 							</p>
 						</div>
 					{/if}
@@ -285,10 +286,10 @@
 					<Button type="submit" class="w-full" disabled={loading}>
 						{#if loading}
 							<Loader2 class="mr-2 h-4 w-4 animate-spin" />
-							{requiresMfa ? 'Verifying...' : 'Signing in...'}
+							{requiresMfa ? $_('login.verifying') : $_('login.signing_in')}
 						{:else}
 							<LogIn class="mr-2 h-4 w-4" />
-							{requiresMfa ? 'Verify' : 'Sign in'}
+							{requiresMfa ? $_('login.verify') : $_('login.sign_in')}
 						{/if}
 					</Button>
 
@@ -303,7 +304,7 @@
 								error = null;
 							}}
 						>
-							Back to login
+							{$_('login.back_to_login')}
 						</Button>
 					{/if}
 				</form>
@@ -311,7 +312,7 @@
 		</Card.Content>
 
 		<Card.Footer class="flex flex-col space-y-2 text-center text-sm text-muted-foreground">
-			<p>Dockhand Docker Management</p>
+			<p>{$_('login.footer')}</p>
 		</Card.Footer>
 	</Card.Root>
 </div>
